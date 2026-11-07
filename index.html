@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VIMALI Caixa</title>
+<meta name="description" content="Caixa do MEI no celular: anote o que entra e o que sai e envie o fechamento ao seu contador.">
+<meta name="theme-color" content="#0f1f3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VIMALI Caixa">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<style>
+:root{--navy:#0f1f3d;--navy2:#16294f;--gold:#d4a017;--gold2:#b8860b;--goldt:#e8c869;--ok:#16a34a;--okS:#e7f7ee;--bad:#dc2626;--badS:#fdecec;--warn:#c26a05;--warnS:#fff4e2;--pri:#2f6bed;--priS:#eaf1ff;--ink:#172235;--mut:#66748b;--line:#e4e9f1;--bg:#f2f5fa;--card:#fff;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;background:#dfe5ef;color:var(--ink);font-size:15px;overscroll-behavior-y:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+#app{max-width:480px;margin:0 auto;height:100%;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:520px){#app{height:min(100%,920px);margin-top:max(0px,calc((100vh - 920px)/2));border-radius:28px;box-shadow:0 30px 80px -30px rgba(15,31,61,.5)}}
+.cab{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:calc(var(--safe-t) + 12px) 18px 18px;flex:none}
+.cab .lin{display:flex;align-items:center;gap:10px;min-height:34px}
+.lg{width:32px;height:32px;border-radius:10px;background:linear-gradient(145deg,var(--gold),var(--gold2));display:grid;place-items:center;color:var(--navy);flex:none}
+.nm{font-weight:800;font-size:15.5px;line-height:1.1;min-width:0}.nm small{display:block;color:var(--goldt);font-size:10px;letter-spacing:.08em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.cab .ola{margin-top:14px;font-size:13.5px;opacity:.85}.cab h1{font-size:21px;margin-top:2px;font-weight:800}
+.ib{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.1);margin-left:auto;font-size:17px}
+.voltar{font-weight:700;color:#fff;font-size:14.5px;display:flex;gap:6px;align-items:center;padding:6px 4px}
+.rolar{flex:1;overflow-y:auto;padding:14px 14px calc(100px + var(--safe-b));-webkit-overflow-scrolling:touch}
+.rolar.sem-nav{padding-bottom:calc(24px + var(--safe-b))}
+.c{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 6px 16px -10px rgba(16,24,40,.14)}
+.c h3{font-size:13px;color:var(--mut);font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.c h3 a{font-size:12.5px;color:var(--pri);text-decoration:none;font-weight:700}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.trio div{background:#fff;border-radius:14px;padding:10px;box-shadow:0 1px 2px rgba(16,24,40,.05);min-width:0}
+.trio small{font-size:11px;color:var(--mut);font-weight:800}.trio b{display:block;font-size:14.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.mut{color:var(--mut)}
+.gauge{display:flex;align-items:center;gap:14px;margin-top:6px}.gauge svg{flex:none}
+.gauge .v{font-size:20px;font-weight:800}.gauge small{color:var(--mut);font-size:12px;display:block}
+.anel{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;flex:none}
+.anel span{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:17px}
+.dica{font-size:12.5px;margin-top:4px;line-height:1.4}
+.das{display:flex;align-items:center;gap:12px;margin-top:8px}
+.data{width:50px;height:52px;border-radius:12px;background:var(--warnS);color:var(--warn);display:grid;place-items:center;text-align:center;font-weight:800;line-height:1;flex:none;font-size:19px}
+.data small{font-size:9.5px;display:block}.data.bad{background:var(--badS);color:var(--bad)}.data.ok{background:var(--okS);color:var(--ok)}
+.btnp{background:var(--navy);color:#fff;border-radius:12px;padding:11px 14px;font-weight:800;font-size:13.5px}
+.btng{background:linear-gradient(145deg,var(--gold),var(--gold2));color:var(--navy);border-radius:14px;padding:15px;font-weight:800;font-size:15.5px;width:100%}
+.btns{background:#e8edf5;border-radius:12px;padding:11px 14px;font-weight:800;font-size:13.5px}
+.btnx{color:var(--bad);font-weight:800;padding:12px;width:100%;margin-top:6px}
+.lanc{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);width:100%;text-align:left}
+.lanc:last-child{border:0}
+.ico{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex:none}
+.lanc .t{flex:1;min-width:0}.lanc .t b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lanc .t small{color:var(--mut);font-size:11.5px}
+.lanc .vl{font-weight:800;font-size:13.5px;white-space:nowrap}
+.dia{font-size:11.5px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin:14px 4px 4px;display:flex;justify-content:space-between}
+.nav{position:absolute;left:0;right:0;bottom:0;height:calc(70px + var(--safe-b));padding-bottom:var(--safe-b);background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;z-index:5}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:800;color:var(--mut);width:70px}
+.nav button.on{color:var(--navy)}.nav button.on .ni{background:var(--priS)}
+.ni{width:44px;height:28px;border-radius:14px;display:grid;place-items:center;font-size:17px}
+.fab{position:absolute;right:16px;bottom:calc(86px + var(--safe-b));display:flex;flex-direction:column;gap:10px;align-items:flex-end;z-index:6}
+.fab button{width:60px;height:60px;border-radius:20px;background:linear-gradient(145deg,var(--gold),var(--gold2));color:var(--navy);font-size:30px;font-weight:800;box-shadow:0 10px 24px -8px rgba(184,134,11,.8)}
+.fab .mic{width:48px;height:48px;border-radius:16px;background:var(--navy);color:#fff;font-size:20px;box-shadow:0 10px 20px -8px rgba(15,31,61,.7)}
+.seg2{display:grid;grid-template-columns:1fr 1fr;background:#e3e9f2;border-radius:14px;padding:4px;gap:4px}
+.seg2 button{padding:11px;border-radius:11px;font-weight:800;color:var(--mut)}
+.seg2 button.on.e{background:var(--ok);color:#fff}.seg2 button.on.s{background:var(--bad);color:#fff}
+.valor{text-align:center;font-size:42px;font-weight:800;margin:14px 0 2px;letter-spacing:-.02em}
+.valor small{font-size:20px;color:var(--mut);font-weight:700}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.cats button{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px 3px;font-size:10.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);line-height:1.15;min-height:66px}
+.cats button span{font-size:20px}.cats button.on{border-color:var(--navy);background:var(--priS)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1.5px solid var(--line);background:#fff;border-radius:30px;padding:7px 12px;font-size:12.5px;font-weight:800}
+.chips button.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.tec{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.tec button{background:#fff;border-radius:12px;padding:12px;font-size:20px;font-weight:700;box-shadow:0 1px 2px rgba(16,24,40,.07)}
+.tec button:active{background:#e8edf5}
+.lbl{font-size:11.5px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:14px 2px 6px}
+.campo{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:15px;outline:none}
+.campo:focus{border-color:var(--pri)}
+.sw{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:12px;padding:12px;font-weight:700;font-size:13.5px;width:100%;margin-top:10px;text-align:left;gap:10px}
+.sw i{width:44px;height:26px;border-radius:20px;background:#cfd6e2;position:relative;transition:.2s;flex:none}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on i{background:var(--ok)}.sw.on i::after{left:21px}
+.sobre{position:absolute;inset:0;background:rgba(10,18,32,.72);display:flex;align-items:flex-end;z-index:20}
+.folha{background:#fff;border-radius:26px 26px 0 0;width:100%;padding:22px 18px calc(24px + var(--safe-b));animation:sobe .25s ease;max-height:92%;overflow-y:auto}
+@keyframes sobe{from{transform:translateY(40px);opacity:0}}
+.onda{display:flex;gap:4px;justify-content:center;align-items:center;height:50px;margin:10px 0}
+.onda i{width:5px;background:var(--gold);border-radius:4px;animation:onda 1s infinite ease-in-out}
+@keyframes onda{0%,100%{height:10px}50%{height:42px}}
+.fala{text-align:center;font-size:16px;font-weight:700;min-height:24px}
+.entendi{background:var(--okS);border-radius:14px;padding:12px;margin-top:12px;font-size:13.5px}
+.entendi div{display:flex;justify-content:space-between;gap:10px;padding:4px 0}
+.barras{display:flex;align-items:flex-end;gap:8px;height:120px;margin:12px 2px 2px}
+.barras>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:10.5px;color:var(--mut);font-weight:800}
+.barras .par{display:flex;gap:3px;align-items:flex-end;height:100%;width:100%}
+.barras i{flex:1;border-radius:6px 6px 2px 2px;display:block;min-height:2px}
+.rel{font-size:12.5px}.rel>div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.rel>div.t{font-weight:800;border:0;background:#f3f6fb;border-radius:8px;padding:8px;margin-top:4px}
+.rel>div.g{font-weight:800;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border:0;padding-top:10px}
+.share{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.share button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:800;text-align:center;line-height:1.2}
+.share span{width:56px;height:56px;border-radius:17px;display:grid;place-items:center;font-size:25px;color:#fff}
+.share button:disabled{opacity:.35}
+.toast{position:absolute;left:14px;right:14px;bottom:calc(86px + var(--safe-b));background:var(--navy);color:#fff;padding:13px 14px;border-radius:14px;font-size:13.5px;font-weight:600;z-index:30;animation:sobe .2s;box-shadow:0 10px 30px -10px rgba(0,0,0,.4)}
+.tg{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:30px;font-size:11px;font-weight:800;background:#eef2f8;color:#334155;white-space:nowrap}
+.tg.ok{background:var(--okS);color:var(--ok)}.tg.bad{background:var(--badS);color:var(--bad)}.tg.warn{background:var(--warnS);color:var(--warn)}.tg.pri{background:var(--priS);color:var(--pri)}
+.aviso{border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:flex-start}
+.aviso.warn{background:var(--warnS);color:#7a4300}.aviso.pri{background:var(--priS);color:#1d3f8f}.aviso.ok{background:var(--okS);color:#0f5c2c}
+.aviso button{margin-top:8px}
+.meses{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;padding:6px;margin-bottom:12px}
+.meses button{width:40px;height:36px;border-radius:10px;font-size:20px;font-weight:800;color:var(--navy)}
+.meses button:disabled{opacity:.25}
+.meses b{font-size:15px}
+.vazio{text-align:center;color:var(--mut);padding:26px 10px;font-size:13.5px;line-height:1.5}
+.vazio span{font-size:36px;display:block;margin-bottom:6px}
+.barra{height:7px;background:#eef2f8;border-radius:10px;overflow:hidden}.barra i{display:block;height:100%;border-radius:10px}
+.lin2{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.boas{flex:1;background:linear-gradient(160deg,#0f1f3d,#16294f 60%,#24396a);color:#fff;padding:calc(var(--safe-t) + 40px) 24px calc(24px + var(--safe-b));display:flex;flex-direction:column;overflow-y:auto}
+.boas .lg{width:58px;height:58px;border-radius:17px}
+.boas h1{font-size:26px;margin-top:10px;line-height:1.2}
+.boas p{opacity:.85;margin-top:12px;line-height:1.55}
+.boas .box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;margin-top:20px;font-size:13.5px;line-height:1.75}
+.boas .campo{background:rgba(255,255,255,.95);border:0;color:var(--ink)}
+.boas label{display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin:14px 0 6px;color:var(--goldt)}
+.eyebrow{color:var(--goldt);font-size:12px;font-weight:800;letter-spacing:.1em;margin-top:22px}
+#print{display:none}
+@media print{body{background:#fff}#app{display:none!important}#print{display:block;font:12px/1.4 Arial,sans-serif;color:#000;padding:10mm}
+ #print table{width:100%;border-collapse:collapse;margin-top:8px}#print td{border:1px solid #999;padding:6px}#print .n{text-align:right}#print .g td{background:#eee;font-weight:bold}#print h2{text-align:center;font-size:15px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="print"></div>
+<script>
+/* ===== Núcleo VIMALI Caixa — o mesmo código no app do celular e no Módulo MEI ===== */
+const VC=(()=>{
+  /* categorias: as mesmas chaves do livro caixa do Módulo MEI */
+  const ENT=[['serv','✂️','Serviços','Prestação de serviços'],['com','🛍️','Vendas','Revenda de mercadorias (comércio)'],['ind','🏭','Produção própria','Venda de produtos industrializados (indústria)'],
+    ['tmun','🚚','Frete municipal','Frete / transporte municipal de cargas'],['tinter','🛣️','Frete fora da cidade','Frete intermunicipal ou interestadual de cargas'],['tpass','🚐','Transporte de passageiros','Transporte de passageiros'],
+    ['outras','➕','Outras entradas','Outras entradas (não são receita bruta)']];
+  const SAI=[['mp','🧴','Produtos e insumos','Matéria-prima e insumos'],['merc','🛒','Mercadoria p/ revender','Compra de mercadorias para revenda'],['aluguel','🏠','Aluguel','Aluguel e condomínio'],['energia','💡','Luz, água, gás','Energia, água e gás'],
+    ['tel','📶','Internet e celular','Telefone e internet'],['comb','⛽','Combustível','Combustível e pedágio'],['manut','🔧','Manutenção','Manutenção de veículo/equipamentos'],['das','🧾','DAS do MEI','DAS-MEI'],
+    ['banco','💳','Maquininha e banco','Tarifas bancárias e maquininha'],['mat','📎','Material de consumo','Material de consumo/escritório'],['mkt','📣','Divulgação','Marketing e publicidade'],['frete','📦','Fretes e entregas','Fretes pagos'],
+    ['sal','👷','Salário do funcionário','Salário de empregado'],['enc','🏛️','FGTS e INSS do funcionário','Encargos (FGTS, CPP, INSS)'],['hon','🧮','Contador','Honorários contábeis'],['taxas','📜','Taxas e alvarás','Taxas, licenças e alvarás'],
+    ['invest','🧰','Equipamento ou veículo','Investimentos (equipamentos, veículo)'],['retirada','👛','Retirada para mim','Retirada do titular (não é despesa)'],['outras','➕','Outras despesas','Outras despesas operacionais']];
+  const cats=t=>t==='R'?ENT:SAI;
+  const cat=(t,k)=>cats(t).find(c=>c[0]===k)||['outras','•',k,k];
+  /* entradas que o perfil do cliente usa (caminhoneiro, serviços, comércio) */
+  function entradasDo(perfil){const t=perfil.t,tr=perfil.tr||'ISS';
+    if(t==='TAC')return ['tinter','tmun','tpass','outras'];
+    const l=[];if(/ISS/.test(tr))l.push('serv');if(/ICMS/.test(tr))l.push('com','ind');if(!l.length)l.push('serv');
+    if(!l.includes('com'))l.push('com');l.push('outras');return l;}
+  function entradaPadrao(perfil){return entradasDo(perfil)[0];}
+  function saidasDo(perfil){const base=perfil.t==='TAC'?['comb','manut','taxas','das','tel','banco','retirada','outras']:['mp','merc','aluguel','energia','tel','das','banco','retirada'];
+    return base.concat(SAI.map(c=>c[0]).filter(k=>!base.includes(k)));}
+
+  /* ---------- dias úteis e DAS (feriados nacionais bancários) ---------- */
+  function pascoa(Y){const a=Y%19,b=Math.floor(Y/100),c=Y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114;return new Date(Y,Math.floor(n/31)-1,n%31+1);}
+  const _f={};
+  function feriados(Y){if(_f[Y])return _f[Y];const p=pascoa(Y),rel=d=>{const x=new Date(p);x.setDate(x.getDate()+d);return x;};
+    const l=[[0,1,'Confraternização Universal'],[3,21,'Tiradentes'],[4,1,'Dia do Trabalho'],[8,7,'Independência'],[9,12,'Nossa Senhora Aparecida'],[10,2,'Finados'],[10,15,'Proclamação da República'],[11,25,'Natal']].map(([m,d,n])=>[new Date(Y,m,d),n]);
+    if(Y>=2024)l.push([new Date(Y,10,20),'Consciência Negra']);
+    l.push([rel(-48),'Carnaval'],[rel(-47),'Carnaval'],[rel(-2),'Sexta-feira Santa'],[rel(60),'Corpus Christi']);
+    const o={};l.forEach(([d,n])=>{o[d.getMonth()*100+d.getDate()]=n;});return _f[Y]=o;}
+  const feriado=d=>feriados(d.getFullYear())[d.getMonth()*100+d.getDate()]||'';
+  const util=d=>d.getDay()%6!==0&&!feriado(d);
+  function vencDAS(Y,m){const d=new Date(Y,m+1,20);const orig=new Date(d);while(!util(d))d.setDate(d.getDate()+1);
+    return {d,prorrogado:d.getTime()!==orig.getTime(),motivo:feriado(orig)||(orig.getDay()===0?'domingo':orig.getDay()===6?'sábado':'')};}
+  const ym=(Y,m)=>{const d=new Date(Y,m,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');};
+  const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+
+  /* ---------- código de envio: JSON → deflate → base64url, com conferência ---------- */
+  const b64e=u8=>{let s='';for(let i=0;i<u8.length;i+=8192)s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+  const b64d=t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const s=atob(t);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
+  const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);};
+  async function fluxo(u8,T){const s=new Blob([u8]).stream().pipeThrough(new T('deflate-raw'));return new Uint8Array(await new Response(s).arrayBuffer());}
+  async function codificar(obj){const raw=new TextEncoder().encode(JSON.stringify(obj));let corpo='0.'+b64e(raw);
+    try{if(typeof CompressionStream!=='undefined'){const z=await fluxo(raw,CompressionStream);if(z.length<raw.length)corpo='1.'+b64e(z);}}catch(e){}
+    const b=corpo.slice(2);return `VMC${corpo[0]}.${b}.${hash(b)}~`;}
+  async function decodificar(texto){
+    const m=String(texto||'').match(/VMC([01])\.([A-Za-z0-9_\-\s>]+?)\.([0-9a-z]+)~/);
+    if(!m)throw new Error('Não encontrei um código do VIMALI Caixa no texto. O código começa com "VMC" e termina com "~".');
+    const b=m[2].replace(/[\s>]/g,'');
+    if(hash(b)!==m[3])throw new Error('O código está incompleto ou foi alterado na cópia. Peça ao cliente para reenviar pelo app (Mês › Enviar ao contador).');
+    let u=b64d(b);if(m[1]==='1'){if(typeof DecompressionStream==='undefined')throw new Error('Este navegador não abre códigos compactados. Use o Chrome ou o Edge atualizados.');u=await fluxo(u,DecompressionStream);}
+    const o=JSON.parse(new TextDecoder().decode(u));if(o.a!=='vc')throw new Error('Código de outro formato.');o._h=m[3];return o;}
+  /* convite (link): JSON → base64url no fragmento # (não vai para servidor nenhum) */
+  const conviteCod=o=>b64e(new TextEncoder().encode(JSON.stringify(o)));
+  const conviteLer=t=>JSON.parse(new TextDecoder().decode(b64d(t)));
+
+  /* ---------- lançamento falado ou escrito: "vendi 150 reais de bolo no pix" ---------- */
+  const UN={zero:0,um:1,uma:1,dois:2,duas:2,'três':3,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10,onze:11,doze:12,treze:13,catorze:14,quatorze:14,quinze:15,dezesseis:16,dezessete:17,dezoito:18,dezenove:19,
+    vinte:20,trinta:30,quarenta:40,cinquenta:50,'cinqüenta':50,sessenta:60,setenta:70,oitenta:80,noventa:90,cem:100,cento:100,duzentos:200,duzentas:200,trezentos:300,trezentas:300,quatrocentos:400,quinhentos:500,quinhentas:500,seiscentos:600,setecentos:700,oitocentos:800,novecentos:900};
+  function porExtenso(txt){ // troca números por extenso por algarismos: "mil e duzentos" → 1200
+    const ws=txt.split(/\s+/),out=[];let i=0;
+    while(i<ws.length){const w=ws[i].toLowerCase();
+      if(w in UN||w==='mil'){let tot=0,cur=0,j=i,usou=false;
+        while(j<ws.length){const x=ws[j].toLowerCase();if(x in UN){cur+=UN[x];usou=true;j++;}else if(x==='mil'){cur=(cur||1)*1000;tot+=cur;cur=0;usou=true;j++;}else if(x==='e'&&j+1<ws.length&&(ws[j+1].toLowerCase() in UN)&&usou){j++;}else break;}
+        out.push(String(tot+cur));i=j;}else{out.push(ws[i]);i++;}}
+    return out.join(' ');}
+  const W=re=>new RegExp("(?:^|[^a-zà-ü0-9])(?:"+re.source.replace(/^\\b/,'')+")");
+  const PAL=[ // [tipo, categoria, expressão]
+    ['D','energia',/\b(luz|energia|celesc|[áa]gua|casan|emasa|g[áa]s\b|botij)/],['D','aluguel',/\b(aluguel|condom[íi]nio)/],['D','tel',/\b(internet|telefone|celular|recarga|plano do cel)/],
+    ['D','comb',/\b(gasolina|diesel|combust[íi]vel|etanol|[áa]lcool|posto|abasteci|ped[áa]gio|arla)/],['D','manut',/\b(manuten|conserto do|oficina|mec[âa]nic|pneu|pe[çc]a|borracharia|revis[ãa]o)/],
+    ['D','das',/\b(das|guia do mei|imposto do mei|boleto do mei)\b/],['D','banco',/\b(maquininha|tarifa|taxa do cart|taxa da m|anuidade|banco)/],['D','merc',/\b(mercadoria|estoque|revenda|para revender|pra revender|fornecedor)/],
+    ['D','mkt',/\b(an[úu]ncio|propaganda|marketing|impulsion|panfleto|cart[ãa]o de visita)/],['D','frete',/\b(motoboy|correio|sedex|frete pago|entregador)/],['D','sal',/\b(sal[áa]rio d[oa] funcion|funcion[áa]ri|empregad|ajudante)/],
+    ['D','enc',/\b(fgts|inss do funcion)/],['D','hon',/\b(contador|contabilidade|honor[áa]rio)/],['D','taxas',/\b(alvar[áa]|licen[çc]a|taxa da prefeitura|vigil[âa]ncia)/],
+    ['D','invest',/\b(equipamento|m[áa]quina nova|computador|notebook|ve[íi]culo|carro|moto|caminh[ãa]o|cadeira|investimento|freezer|geladeira)/],['D','retirada',/\b(retirada|retirei|tirei pra mim|pra mim|para mim|pr[óo]-?labore|meu sal[áa]rio)/],
+    ['D','mat',/\b(material de limpeza|papel|escrit[óo]rio|sacola|embalage)/],['D','mp',/\b(produto|insumo|mat[ée]ria|material|ingrediente|farinha|a[çc][úu]car|tinta|tintura|esmalte|shampoo|xampu|tecido|linha)/],
+    ['R','outras',/\b(empr[ée]stimo|emprestad|aporte|coloquei dinheiro|dep[óo]sito meu|transferi pra empresa)/],
+    ['R','tinter',/\b(frete (para|pra) (outra cidade|fora|outro estado)|viagem|interestadual|intermunicipal)/],['R','tmun',/\b(frete|carreto|mudan[çc]a|entrega)/],
+    ['R','serv',/\b(servi[çc]o|corte|escova|manicure|pedicure|unha|maquiage|conserto|instala|atendimento|aula|consulta|reparo|limpeza|faxina|diaria|di[áa]ria)/],
+    ['R','ind',/\b(fabriquei|produzi|fabrica[çc][ãa]o|feito por mim)/],['R','com',/\b(vend|produto|mercadoria|bolo|doce|salgado|roupa|lanche|marmita|pe[çc]a)/]];
+  const FORMAS=[['Pix',/\bpix\b/],['Dinheiro',/\b(dinheiro|esp[ée]cie|em m[ãa]os)\b/],['Cartão de crédito',/\bcr[ée]dito\b/],['Cartão de débito',/\bd[ée]bito\b/],['Cartão de débito',/\bcart[ãa]o\b/],['Boleto',/\bboleto\b/],['Transferência',/\b(transfer[êe]ncia|ted|doc)\b/]];
+  function interpretar(frase,perfil){
+    const orig=String(frase||'').trim();
+    let t=orig.toLowerCase().replace(/(\d+)(?:,(\d+))?\s*mil\b(?:\s+e\s+(\d+))?/g,(_,a,b,c)=>String(Math.round(parseFloat(a+'.'+(b||0))*1000)+(+c||0))); // "2 mil", "1,5 mil", "2 mil e 500"
+    t=' '+porExtenso(t)+' ';
+    const r={tipo:null,valor:0,cat:null,forma:null,nf:null,desc:'',frase:orig};
+    if(/\b(vend|receb|entrou|ganhei|cobrei|faturei|fiz um|fiz uma|atendi)/.test(t))r.tipo='R';
+    if(/\b(pag|gast|compr|saiu|retir|tirei|paguei|abasteci)/.test(t)&&!(r.tipo==='R'&&/\b(vend|receb)/.test(t)&&t.search(/\b(vend|receb)/)<t.search(/\b(pag|gast|compr)/)))r.tipo=r.tipo==='R'&&/\b(vend|receb)/.test(t)?'R':'D';
+    // valor: "R$ 1.234,56", "150 reais e 50 centavos", "150,50", "1200"
+    let m=t.match(/(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?\s*(?:reais|real|conto|contos|pila)?(?:\s+e\s+(\d{1,2})\s*centavos?)?/);
+    const mc=t.match(/(\d{1,2})\s*centavos?/);
+    if(m){r.valor=parseFloat(m[1].replace(/\./g,''))+(m[2]?parseFloat('0.'+m[2].padEnd(2,'0')):m[3]?(+m[3])/100:0);}
+    else if(mc)r.valor=(+mc[1])/100;
+    r.valor=Math.round(r.valor*100)/100;
+    for(const [f,re] of FORMAS)if(W(re).test(t)){r.forma=f;break;}
+    if(/\b(com nota|emiti nota|nota fiscal|com nf)\b/.test(t))r.nf=true;else if(/\b(sem nota|sem nf)\b/.test(t))r.nf=false;
+    for(const [tp,k,re0] of PAL){const re=W(re0);if(r.tipo&&r.tipo!==tp)continue;if(re.test(t)){if(tp==='R'&&!entradasDo(perfil||{}).includes(k)&&k!=='outras')continue;r.cat=k;if(!r.tipo)r.tipo=tp;break;}}
+    if(!r.tipo&&r.valor)r.tipo='D';
+    if(r.tipo&&!r.cat)r.cat=r.tipo==='R'?entradaPadrao(perfil||{}):'outras';
+    // descrição: o que sobra depois de tirar verbo, valor e forma
+    let d=t.replace(/r\$\s*/g,' ').replace(/(\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?\s*(reais|real|contos?|pila)?(\s+e\s+\d{1,2}\s*centavos?)?/g,' ')
+      .replace(/\b(eu|hoje|agora|ontem|acabei de|vendi|recebi|entrou|ganhei|cobrei|faturei|paguei|pago|gastei|comprei|saiu|retirei|tirei|abasteci|fiz|atendi|um|uma|uns|umas)\b/g,' ')
+      .replace(/\b(no|na|em|pelo|pela|via|com|sem)\s+(pix|dinheiro|esp[ée]cie|cart[ãa]o( de)?( cr[ée]dito| d[ée]bito)?|cr[ée]dito|d[ée]bito|boleto|transfer[êe]ncia)\b/g,' ')
+      .replace(/\b(pix|dinheiro|boleto)\b/g,' ').replace(/\b(pra|para) mim\b/g,' ').replace(/\b(com|sem) (nota( fiscal)?|nf)\b/g,' ').replace(/\s+/g,' ').trim()
+      .replace(/^(de|do|da|dos|das|em|no|na|pra|para|com|o|a|os|as)\s+/,'').replace(/\s+(de|do|da|no|na|em|e)$/,'').trim();
+    r.desc=d==='das'?'DAS':d?d[0].toUpperCase()+d.slice(1):(r.tipo?cat(r.tipo,r.cat)[2]:'');
+    r.ok=!!(r.tipo&&r.valor>0);return r;}
+
+  /* ---------- índice de saúde do negócio (0 a 100) ---------- */
+  // l: [{data:'AAAA-MM-DD',tipo,cat,valor}] · o: {hoje, inicio, limite, nMeses, mesInicio, fat:{AAAA:[12]}, dasPend}
+  function receitaMes(l,Y,m){const k=ym(Y,m);return l.filter(x=>x.tipo==='R'&&x.cat!=='outras'&&x.data.slice(0,7)===k).reduce((a,x)=>a+(+x.valor||0),0);}
+  function limite(l,o){ // faturamento do ano: mês com receita lançada no app usa o app; senão, o valor informado pelo escritório
+    const H=o.hoje||new Date(),Y=H.getFullYear(),M=H.getMonth(),ini0=o.mesInicio||0,dec=Math.max(1,M+1-ini0);let ac=0;
+    for(let m=ini0;m<=M;m++){const temApp=l.some(x=>x.tipo==='R'&&x.data.slice(0,7)===ym(Y,m));ac+=temApp?receitaMes(l,Y,m):(+((o.fat||{})[Y]||[])[m]||0);}
+    const proj=ac/dec*(o.nMeses||12);return {ac,proj,pp:proj/o.limite,uso:ac/o.limite};}
+  function saude(l,o){
+    const H=o.hoje||new Date(),Y=H.getFullYear(),M=H.getMonth(),d90=iso(new Date(H.getTime()-90*864e5)),d28=iso(new Date(H.getTime()-27*864e5));
+    const rec=l.filter(x=>x.data>=d90);
+    if(l.length<5)return {nota:null,rot:'Calculando',cor:'mut',itens:[],dica:'Faça pelo menos 5 lançamentos para ver a saúde do seu negócio.'};
+    const rb=rec.filter(x=>x.tipo==='R'&&x.cat!=='outras').reduce((a,x)=>a+(+x.valor),0);
+    const op=rec.filter(x=>x.tipo==='D'&&!['invest','retirada'].includes(x.cat)).reduce((a,x)=>a+(+x.valor),0);
+    const ret=rec.filter(x=>x.tipo==='D'&&x.cat==='retirada').reduce((a,x)=>a+(+x.valor),0);
+    const lucro=rb-op,mg=rb?lucro/rb:0;
+    const it=[];const cl=v=>Math.max(0,Math.min(100,Math.round(v)));
+    // 1. margem
+    it.push({k:'margem',n:'Margem de lucro',p:cl(rb?(mg>=.3?100:mg>=0?40+mg*200:40+mg*100):0),w:25,
+      txt:rb?`${Math.round(mg*100)}% nos últimos 90 dias (sobraram ${fmt(lucro)} de ${fmt(rb)})`:'Sem entradas nos últimos 90 dias',
+      dica:mg<.15?'Revise preços e os maiores gastos: hoje sobra pouco de cada venda.':'Margem saudável. Continue acompanhando os gastos fixos.'});
+    // 2. regularidade dos lançamentos (semanas com registro nas últimas 4)
+    const ini=o.inicio&&o.inicio>d28?o.inicio:d28;const semanas=Math.max(1,Math.min(4,Math.ceil((H-new Date(ini+'T00:00:00'))/(7*864e5))));
+    const comReg=new Set(l.filter(x=>x.data>=ini).map(x=>Math.floor((H-new Date(x.data+'T12:00:00'))/(7*864e5)))).size;
+    it.push({k:'reg',n:'Lançamentos em dia',p:cl(Math.min(comReg,semanas)/semanas*100),w:20,txt:`${Math.min(comReg,semanas)} de ${semanas} semana(s) com registro`,
+      dica:'Anote no mesmo dia: 1 minuto por dia evita esquecer vendas e despesas.'});
+    // 3. limite do MEI (projeção do ano)
+    if(o.limite){const {ac,proj,pp}=limite(l,o);
+      it.push({k:'lim',n:'Uso do limite do MEI',p:cl(pp<=.8?100:pp<=1?100-(pp-.8)*300:pp<=1.2?40-(pp-1)*200:0),w:20,ac,proj,pp,uso:ac/o.limite,
+        txt:`${Math.round(ac/o.limite*100)}% usado · projeção do ano ${Math.round(pp*100)}%`,dica:pp>1?'A projeção passa do limite: fale com o seu contador antes de emitir novas notas.':pp>.8?'Atenção ao limite: acompanhe mês a mês com o seu contador.':'Faturamento dentro do limite do MEI.'});}
+    // 4. DAS em dia
+    const dp=Math.max(0,o.dasPend||0);
+    it.push({k:'das',n:'DAS em dia',p:[100,60,30][dp]??0,w:20,txt:dp?`${dp} DAS vencido(s) sem pagamento informado`:'Nenhum DAS em atraso',dica:dp?'Pague o DAS em atraso o quanto antes: atrasos geram multa e juros e podem cancelar benefícios do INSS.':'DAS em dia garante aposentadoria e auxílios do INSS.'});
+    // 5. separação pessoa física × empresa
+    it.push({k:'sep',n:'Dinheiro da empresa × pessoal',p:cl(!ret?70:lucro<=0?20:ret<=lucro?100:Math.max(20,lucro/ret*100)),w:15,
+      txt:!ret?'Nenhuma retirada anotada':`Retiradas de ${fmt(ret)} para um lucro de ${fmt(lucro)} (90 dias)`,
+      dica:!ret?'Anote quando tirar dinheiro do negócio para você (categoria "Retirada para mim").':ret>lucro?'Você retirou mais do que o negócio lucrou: defina um "salário" fixo para você.':'Retiradas dentro do lucro. Ótimo!'});
+    const nota=Math.round(it.reduce((a,x)=>a+x.p*x.w,0)/it.reduce((a,x)=>a+x.w,0));
+    const pior=it.slice().sort((a,b)=>a.p-b.p)[0];
+    return {nota,rot:nota>=80?'Ótima':nota>=60?'Boa':nota>=40?'Atenção':'Crítica',cor:nota>=60?'ok':nota>=40?'warn':'bad',itens:it,dica:pior.dica,lucro,rb,op,ret,mg};}
+  const fmt=v=>(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  return {ENT,SAI,cats,cat,entradasDo,entradaPadrao,saidasDo,feriado,vencDAS,ym,iso,codificar,decodificar,conviteCod,conviteLer,interpretar,saude,limite,receitaMes,hash,fmt};
+})();
+
+const APP_VER='1.0.0';
+const KEY='vimaliCaixa_v1';
+const LOGO=s=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/></svg>`;
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const FORMAS=['Pix','Dinheiro','Cartão de débito','Cartão de crédito','Boleto','Transferência'];
+const brl=VC.fmt;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5);
+const hojeISO=()=>VC.iso(new Date());
+const fmtD=d=>d?d.slice(8,10)+'/'+d.slice(5,7):'';
+const fmtDL=d=>{const x=new Date(d+'T12:00:00');return x.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});};
+const dig=s=>String(s||'').replace(/\D/g,'');
+const fmtCNPJ=c=>{c=dig(c);return c.length===14?c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'):c;};
+const primeiro=n=>String(n||'').trim().split(/\s+/)[0]||'';
+
+/* ---------- dados no aparelho ---------- */
+let D=carregar();
+function carregar(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.lanc)return Object.assign({perfil:null,inicio:hojeISO(),lanc:[],del:[],das:{},envios:[],ultEnvio:0},d);}catch(e){}return {perfil:null,inicio:hojeISO(),lanc:[],del:[],das:{},envios:[],ultEnvio:0};}
+function gravar(){try{localStorage.setItem(KEY,JSON.stringify(D));}catch(e){aviso('Não consegui salvar no aparelho: memória cheia?');}}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+
+/* ---------- estado da tela ---------- */
+const H=new Date();
+let st={tela:'inicio',mes:[H.getFullYear(),H.getMonth()],filtro:'todos',toast:'',voz:null,f:null,mais:false,convite:null,envio:null};
+
+/* ---------- convite do contador (link com #c=...) ---------- */
+function lerConvite(){const m=location.hash.match(/[#&]c=([A-Za-z0-9_-]+)/);if(!m)return null;
+  try{const o=VC.conviteLer(m[1]);if(!o||!o.n)return null;return o;}catch(e){return {erro:true};}}
+function iniciar(){
+  const cv=lerConvite();
+  if(cv){history.replaceState(null,'',location.pathname+location.search);
+    if(cv.erro){st.tela=D.perfil?'inicio':'boas';st.toast='O link do convite está incompleto. Peça ao seu contador para enviar de novo.';}
+    else{st.convite=cv;st.tela='convite';}}
+  else st.tela=D.perfil?'inicio':'boas';
+  history.replaceState({t:st.tela},'');
+  r();
+  if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+function aceitarConvite(){const cv=st.convite;
+  if(D.perfil&&D.perfil.c&&cv.c&&dig(D.perfil.c)!==dig(cv.c)){
+    if(!confirm(`Este aparelho já tem o caixa de ${D.perfil.n}. Trocar para ${cv.n}? Os lançamentos atuais serão apagados. Antes, faça uma cópia em Ajustes › Cópia de segurança.`))return;
+    D={perfil:null,inicio:hojeISO(),lanc:[],del:[],das:{},envios:[],ultEnvio:0};}
+  const novo=!D.perfil;D.perfil=Object.assign({},cv,{conv:hojeISO()});if(novo)D.inicio=hojeISO();gravar();st.convite=null;
+  ir('inicio',true);aviso(novo?`Pronto! Seu caixa está configurado pelo ${cv.e||'seu contador'}.`:'Dados do seu contador atualizados.');}
+
+/* ---------- navegação ---------- */
+function r(){const el=document.getElementById('app');el.innerHTML=(T[st.tela]||T.inicio)()+(st.toast?`<div class="toast" role="status">${esc(st.toast)}</div>`:'')+(st.voz?vozHTML():'');posRender();}
+function ir(t,substitui){st.tela=t;st.toast='';if(substitui)history.replaceState({t},'');else history.pushState({t},'');r();const rl=document.querySelector('.rolar');if(rl)rl.scrollTop=0;}
+function voltar(){history.back();}
+addEventListener('popstate',e=>{if(st.voz){st.voz=null;pararVoz();}st.tela=(e.state&&e.state.t)||(D.perfil?'inicio':'boas');if(st.tela==='novo'&&!st.f)st.tela='inicio';r();});
+function aviso(m,ms){st.toast=m;r();clearTimeout(window._t);window._t=setTimeout(()=>{st.toast='';r();},ms||2800);}
+function posRender(){const v=document.getElementById('fDesc');if(v)v.oninput=e=>{st.f.desc=e.target.value;};const dt=document.getElementById('fData');if(dt)dt.onchange=e=>{if(e.target.value){st.f.data=e.target.value;r();}};}
+
+/* ---------- cálculos ---------- */
+const P=()=>D.perfil||{};
+const doMes=(Y,m)=>{const k=VC.ym(Y,m);return D.lanc.filter(x=>x.data.slice(0,7)===k);};
+function totais(l){const e=l.filter(x=>x.tipo==='R').reduce((a,x)=>a+x.valor,0),s=l.filter(x=>x.tipo==='D').reduce((a,x)=>a+x.valor,0);return {e,s,l:e-s};}
+function resumoMes(Y,m){const l=doMes(Y,m),g=ks=>{const s=l.filter(x=>x.tipo==='R'&&ks.includes(x.cat));const nf=s.filter(x=>x.nf).reduce((a,x)=>a+x.valor,0),t=s.reduce((a,x)=>a+x.valor,0);return [t-nf,nf,t];};
+  const I=g(['com']),II=g(['ind']),III=g(['serv','tmun','tinter','tpass']);
+  const op=l.filter(x=>x.tipo==='D'&&!['invest','retirada'].includes(x.cat)).reduce((a,x)=>a+x.valor,0);
+  const ret=l.filter(x=>x.tipo==='D'&&x.cat==='retirada').reduce((a,x)=>a+x.valor,0),inv=l.filter(x=>x.tipo==='D'&&x.cat==='invest').reduce((a,x)=>a+x.valor,0);
+  const outras=l.filter(x=>x.tipo==='R'&&x.cat==='outras').reduce((a,x)=>a+x.valor,0);
+  const rb=I[2]+II[2]+III[2];return {l,I,II,III,rb,nf:I[1]+II[1]+III[1],op,ret,inv,outras,lucro:rb-op};}
+function limiteInfo(){const p=P();if(!p.l)return null;const Y=H.getFullYear();let mi=0;if(p.ab&&+p.ab.slice(0,4)===Y)mi=+p.ab.slice(5,7)-1;
+  return {limite:p.l,mesInicio:mi,nMeses:12-mi,fat:p.fa||{}};}
+function dasPago(comp){const p=P();if(D.das[comp])return true;const Y=+comp.slice(0,4),m=+comp.slice(5,7)-1;const b=(p.dp||{})[Y];return !!(b&&(b>>m)&1);}
+function dasLista(){ // competências do ano corrente (e dezembro anterior) já exigíveis
+  const p=P(),Y=H.getFullYear(),hoje=new Date(H.toDateString());const out=[];
+  let ini=new Date((p.dp||{})[Y-1]!=null?Y-1:Y,(p.dp||{})[Y-1]!=null?11:0,1);if(p.ab){const a=new Date(p.ab+'T12:00:00');if(a>ini)ini=new Date(a.getFullYear(),a.getMonth(),1);}
+  if(!p.dp){const i=new Date(D.inicio+'T12:00:00');const ii=new Date(i.getFullYear(),i.getMonth()-1,1);if(ii>ini)ini=ii;}
+  for(let d=new Date(ini);d<=new Date(Y,H.getMonth(),1);d.setMonth(d.getMonth()+1)){const comp=VC.ym(d.getFullYear(),d.getMonth()),v=VC.vencDAS(d.getFullYear(),d.getMonth());
+    out.push({comp,Y:d.getFullYear(),m:d.getMonth(),venc:v.d,motivo:v.prorrogado?v.motivo:'',pago:dasPago(comp),vencido:v.d<hoje});}
+  return out;}
+function proxDAS(){const l=dasLista();const atr=l.filter(x=>!x.pago&&x.vencido);if(atr.length)return {...atr[0],atrasados:atr.length};
+  return l.find(x=>!x.pago)||null;}
+function valorDAS(Y){const d=P().d||{},ks=Object.keys(d).map(Number).sort();if(d[Y])return d[Y];const k=ks.filter(x=>x<=Y).pop()??ks[0];return k!=null?d[k]:0;}
+function saudeAtual(){const li=limiteInfo()||{};return VC.saude(D.lanc,{hoje:H,inicio:D.inicio,limite:li.limite,mesInicio:li.mesInicio,nMeses:li.nMeses,fat:li.fat,dasPend:dasLista().filter(x=>!x.pago&&x.vencido).length});}
+function gauge(p){p=Math.max(0,Math.min(1.2,p));const a=Math.PI*Math.min(p,1),R=46,x=60-R*Math.cos(a),y=58-R*Math.sin(a);const cor=p>1?'#dc2626':p>.8?'#d97706':'#16a34a';
+  return `<svg width="120" height="66" viewBox="0 0 120 66" aria-hidden="true"><path d="M14 58a46 46 0 0 1 92 0" fill="none" stroke="#e6ebf2" stroke-width="11" stroke-linecap="round"/>${p>0.005?`<path d="M14 58A46 46 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="${cor}" stroke-width="11" stroke-linecap="round"/>`:''}<text x="60" y="55" text-anchor="middle" font-size="17" font-weight="800" fill="#172235">${Math.round(p*100)}%</text></svg>`;}
+const anel=(n,cor,t=62)=>`<div class="anel" style="width:${t}px;height:${t}px;background:conic-gradient(var(--${cor}) 0 ${n||0}%,#e6ebf2 ${n||0}% 100%)"><span style="width:${t-14}px;height:${t-14}px;font-size:${t>80?30:17}px">${n??'–'}</span></div>`;
+const icoCat=(t,k)=>VC.cat(t,k)[1];
+function lancHTML(x){return `<button class="lanc" onclick="editar('${x.id}')"><div class="ico" style="background:${x.tipo==='R'?'var(--okS)':'var(--badS)'}">${icoCat(x.tipo,x.cat)}</div><div class="t"><b>${esc(x.desc||VC.cat(x.tipo,x.cat)[2])}</b><small>${fmtD(x.data)} · ${esc(x.forma)}${x.tipo==='R'?(x.nf?' · com nota':' · sem nota'):''}</small></div><span class="vl ${x.tipo==='R'?'ok':'bad'}">${x.tipo==='R'?'+':'−'} ${brl(x.valor)}</span></button>`;}
+function cab(titulo,sub,comVoltar){const p=P();return `<div class="cab"><div class="lin">${comVoltar?`<button class="voltar" onclick="voltar()">‹ Voltar</button>`:`<div class="lg">${LOGO(17)}</div><div class="nm">VIMALI Caixa<small>${esc((p.n||'Meu negócio').toUpperCase())}</small></div>`}
+  ${comVoltar?'':`<button class="ib" onclick="ir('ajustes')" aria-label="Ajustes">⚙️</button>`}</div>${titulo?`${sub?`<div class="ola">${sub}</div>`:''}<h1>${titulo}</h1>`:''}</div>`;}
+function nav(on){return `<nav class="nav">${[['inicio','🏠','Início'],['lista','📋','Lançamentos'],['mes','📊','Mês'],['saude','💚','Saúde']].map(([k,i,n])=>`<button class="${on===k?'on':''}" onclick="ir('${k}',true)"><span class="ni">${i}</span>${n}</button>`).join('')}</nav>`;}
+const fab=()=>`<div class="fab"><button class="mic" aria-label="Lançar falando" onclick="abrirVoz()">🎙️</button><button aria-label="Novo lançamento" onclick="novo('R')">+</button></div>`;
+function seletorMes(){const [Y,m]=st.mes,fut=Y>H.getFullYear()||(Y===H.getFullYear()&&m>=H.getMonth());
+  return `<div class="meses"><button onclick="mudaMes(-1)" aria-label="Mês anterior">‹</button><b>${MESES[m]} de ${Y}</b><button onclick="mudaMes(1)" ${fut?'disabled':''} aria-label="Próximo mês">›</button></div>`;}
+function mudaMes(n){const d=new Date(st.mes[0],st.mes[1]+n,1);st.mes=[d.getFullYear(),d.getMonth()];r();}
+
+/* ---------- telas ---------- */
+const T={};
+T.boas=()=>`<div class="boas"><div class="lg">${LOGO(30)}</div>
+  <div class="eyebrow">VIMALI · INTELIGÊNCIA CONTÁBIL</div><h1>O caixa do seu MEI, no bolso.</h1>
+  <p>Anote em segundos o que entra e o que sai, acompanhe o limite do MEI e o DAS, e envie o fechamento do mês ao seu contador pelo WhatsApp.</p>
+  <div class="box">📩 <b>Recebeu um link do seu contador?</b> Abra por ele: o app já vem configurado.<br>Ou preencha abaixo para começar agora.</div>
+  <label for="bNome">NOME DO NEGÓCIO</label><input id="bNome" class="campo" placeholder="Ex.: Salão da Ana">
+  <label for="bTipo">O QUE VOCÊ FAZ</label><select id="bTipo" class="campo"><option value="ISS">Presto serviços</option><option value="ICMS">Vendo produtos (comércio)</option><option value="ICMS+ISS">Serviços e vendas</option><option value="TAC">Sou caminhoneiro (frete)</option></select>
+  <label for="bZap">WHATSAPP DO SEU CONTADOR (opcional)</label><input id="bZap" class="campo" inputmode="tel" placeholder="(47) 99999-9999">
+  <div style="flex:1;min-height:24px"></div><button class="btng" onclick="comecarSemConvite()">Começar</button>
+  <p style="text-align:center;font-size:12px;margin-top:12px;opacity:.65">Sem cadastro e sem senha. Seus dados ficam neste aparelho até você enviar.</p></div>`;
+function comecarSemConvite(){const n=document.getElementById('bNome').value.trim();if(!n){aviso('Informe o nome do negócio.');return;}
+  const tp=document.getElementById('bTipo').value;D.perfil={n,t:tp==='TAC'?'TAC':'MEI',tr:tp==='TAC'?'ICMS':tp,w:dig(document.getElementById('bZap').value),manual:true};D.inicio=hojeISO();gravar();ir('inicio',true);aviso('Tudo pronto! Toque no + para o primeiro lançamento.');}
+T.convite=()=>{const c=st.convite;return `<div class="boas"><div class="lg">${LOGO(30)}</div>
+  <div class="eyebrow">CONVITE DO SEU CONTADOR</div><h1>Olá, ${esc(primeiro(c.r||c.n))}! Seu caixa do MEI agora cabe no bolso.</h1>
+  <p>O <b>${esc(c.e||'seu escritório de contabilidade')}</b> preparou o VIMALI Caixa para <b>${esc(c.n)}</b>. Já está tudo configurado: é só anotar o que entra e o que sai.</p>
+  <div class="box">${c.c?`✓ CNPJ ${esc(fmtCNPJ(c.c))}<br>`:''}✓ ${c.t==='TAC'?'MEI Caminhoneiro (transporte de cargas)':c.tr==='ICMS'?'Comércio / indústria':c.tr==='ICMS+ISS'?'Comércio e serviços':'Prestação de serviços'}<br>${c.l?`✓ Limite do MEI em ${new Date().getFullYear()}: ${brl(c.l)}<br>`:''}✓ Seus dados ficam no seu celular até você enviar</div>
+  <div style="flex:1;min-height:24px"></div><button class="btng" onclick="aceitarConvite()">Começar</button>
+  <p style="text-align:center;font-size:12px;margin-top:12px;opacity:.65">Sem cadastro e sem senha · aberto pelo link do seu contador</p></div>`;};
+T.inicio=()=>{const [Y,m]=[H.getFullYear(),H.getMonth()],t=totais(doMes(Y,m)),p=P(),s=saudeAtual(),li=limiteInfo();
+  const lim=li?VC.limite(D.lanc,Object.assign({hoje:H},li)):null;const dz=proxDAS();
+  const tit=!doMes(Y,m).length?`${MESES[m]} começou`:t.l>=0?`${MESES[m]} está positivo`:`${MESES[m]} está no vermelho`;
+  const pm=new Date(Y,m-1,1),compAnt=VC.ym(pm.getFullYear(),pm.getMonth()),jaEnviou=D.envios.some(e=>e.p===compAnt);
+  const temAnt=doMes(pm.getFullYear(),pm.getMonth()).length>0;
+  let banner='';
+  if(temAnt&&!jaEnviou&&H.getDate()<=25)banner=`<div class="aviso pri"><span>📤</span><div><b>Hora de fechar ${MESES[pm.getMonth()].toLowerCase()}.</b> Envie o fechamento ao seu contador${H.getDate()<20?' até o dia 20':''}.<br><button class="btnp" onclick="st.mes=[${pm.getFullYear()},${pm.getMonth()}];ir('enviar')">Enviar agora</button></div></div>`;
+  else if(window._instalar)banner=`<div class="aviso ok"><span>📲</span><div><b>Instale o app</b> para abrir direto da tela inicial, mesmo sem internet.<br><button class="btnp" onclick="instalar()">Instalar</button></div></div>`;
+  else if(ehIOS()&&!emApp()&&!localStorage.getItem('vcDicaIOS'))banner=`<div class="aviso ok"><span>📲</span><div><b>Coloque na tela inicial:</b> toque em <b>Compartilhar</b> <span style="font-size:15px">⎋</span> e depois em <b>Adicionar à Tela de Início</b>.<br><button class="btns" onclick="localStorage.setItem('vcDicaIOS',1);r()">Entendi</button></div></div>`;
+  return cab(tit,`Olá${p.r||p.n?', '+esc(primeiro(p.r||p.n)):''} 👋`)+`<div class="rolar">${banner}
+  <div class="trio"><div><small>Entrou</small><b class="ok">${brl(t.e)}</b></div><div><small>Saiu</small><b class="bad">${brl(t.s)}</b></div><div><small>Sobrou</small><b class="${t.l<0?'bad':''}">${brl(t.l)}</b></div></div>
+  ${lim?`<div class="c"><h3>Limite do MEI em ${Y} <span class="tg ${lim.pp>1?'bad':lim.pp>.8?'warn':'ok'}">${lim.pp>1?'acima do limite':lim.pp>.8?'atenção':'no caminho'}</span></h3><div class="gauge">${gauge(lim.uso)}<div><span class="v">${brl(lim.ac)}</span><small>de ${brl(li.limite)} usados</small><small style="margin-top:4px">Projeção do ano: <b style="color:var(--ink)">${brl(lim.proj)}</b> (${Math.round(lim.pp*100)}%)</small></div></div>
+   ${p.l2&&p.l2!==p.l?`<div class="dica mut">💡 Em ${Y+1} o limite passa a ser ${brl(p.l2)}.</div>`:''}</div>`:''}
+  ${dz?`<div class="c"><h3>${dz.vencido?'DAS em atraso':'Próximo DAS'} <span class="mut" style="font-weight:700">competência ${MESES[dz.m].toLowerCase()}</span></h3><div class="das"><div class="data ${dz.vencido?'bad':''}">${String(dz.venc.getDate()).padStart(2,'0')}<small>${MESES[dz.venc.getMonth()].slice(0,3).toUpperCase()}</small></div>
+   <div style="flex:1;min-width:0">${valorDAS(dz.Y)?`<b>${brl(valorDAS(dz.Y))}</b>`:'<b>DAS do MEI</b>'}<div style="font-size:12px;color:var(--mut)">${dz.vencido?`Venceu em ${dz.venc.toLocaleDateString('pt-BR')}${dz.atrasados>1?` · ${dz.atrasados} em atraso`:''}`:dz.motivo?`Prorrogado: dia 20 cai em ${dz.motivo}`:'Vence no dia 20'}</div></div><button class="btnp" onclick="pagarDAS('${dz.comp}')">Já paguei</button></div></div>`:''}
+  <button class="c" style="width:100%;text-align:left" onclick="ir('saude')"><h3>Saúde do negócio <a>ver ›</a></h3><div style="display:flex;gap:12px;align-items:center;margin-top:8px">${anel(s.nota,s.cor)}<div style="min-width:0"><b>${s.rot}</b><div class="dica">${esc(s.dica)}</div></div></div></button>
+  <div class="c"><h3>Últimos lançamentos ${D.lanc.length?`<a href="#" onclick="ir('lista');return false">ver todos ›</a>`:''}</h3>${D.lanc.length?D.lanc.slice().sort((a,b)=>b.data.localeCompare(a.data)||b.u-a.u).slice(0,5).map(lancHTML).join(''):`<div class="vazio"><span>📝</span>Toque no <b>+</b> para anotar uma entrada ou saída,<br>ou no 🎙️ e fale: <i>"vendi 150 reais no pix"</i>.</div>`}</div>
+  </div>${fab()}${nav('inicio')}`;};
+function pagarDAS(comp){D.das[comp]=hojeISO();gravar();aviso(`DAS de ${MESES[+comp.slice(5,7)-1].toLowerCase()} marcado como pago. Seu contador vê isso no próximo envio.`);}
+T.lista=()=>{const [Y,m]=st.mes;let l=doMes(Y,m);const f=st.filtro;
+  if(f==='e')l=l.filter(x=>x.tipo==='R');if(f==='s')l=l.filter(x=>x.tipo==='D');if(f==='nf')l=l.filter(x=>x.tipo==='R'&&!x.nf);
+  const dias={};l.slice().sort((a,b)=>b.data.localeCompare(a.data)||b.u-a.u).forEach(x=>{(dias[x.data]=dias[x.data]||[]).push(x);});
+  return cab('Lançamentos')+`<div class="rolar">${seletorMes()}
+  <div class="chips" style="margin-bottom:6px">${[['todos','Todos'],['e','Entradas'],['s','Saídas'],['nf','Entradas sem nota']].map(([k,n])=>`<button class="${f===k?'on':''}" onclick="st.filtro='${k}';r()">${n}</button>`).join('')}</div>
+  ${Object.keys(dias).length?Object.entries(dias).map(([d,xs])=>{const t=totais(xs);return `<div class="dia"><span>${fmtDL(d)}</span><span class="${t.l<0?'bad':'ok'}">${t.l<0?'−':'+'} ${brl(Math.abs(t.l))}</span></div><div class="c" style="padding:4px 14px">${xs.map(lancHTML).join('')}</div>`;}).join('')
+   :`<div class="c vazio"><span>🗓️</span>Nenhum lançamento ${f==='todos'?'':'com esse filtro '}em ${MESES[m].toLowerCase()}.</div>`}
+  </div>${fab()}${nav('lista')}`;};
+function novo(tipo,pre){const p=P();st.f=Object.assign({id:null,tipo,valor:0,cat:tipo==='R'?VC.entradaPadrao(p):VC.saidasDo(p)[0],forma:'Pix',nf:false,desc:'',data:hojeISO(),txt:''},pre||{});st.f.txt=st.f.valor?String(Math.round(st.f.valor*100)):'';st.mais=false;ir('novo');}
+function editar(id){const x=D.lanc.find(y=>y.id===id);if(!x)return;st.f=Object.assign({},x,{txt:String(Math.round(x.valor*100))});st.mais=!VC.saidasDo(P()).slice(0,7).includes(x.cat)&&x.tipo==='D';ir('novo');}
+T.novo=()=>{const f=st.f,p=P();if(!f)return T.inicio();const R=f.tipo==='R';
+  const ks=R?VC.entradasDo(p):VC.saidasDo(p);const vis=R||st.mais?ks:ks.slice(0,7);
+  const ontem=VC.iso(new Date(Date.now()-864e5));
+  return cab('','',true)+`<div class="rolar sem-nav">
+  <div class="seg2"><button class="e ${R?'on':''}" onclick="trocaTipo('R')">↓ Entrou</button><button class="s ${!R?'on':''}" onclick="trocaTipo('D')">↑ Saiu</button></div>
+  <div class="valor" aria-live="polite">${f.txt?brl(+f.txt/100):'<small>R$</small> 0,00'}</div>
+  <div class="tec">${['1','2','3','4','5','6','7','8','9','00','0','⌫'].map(k=>`<button onclick="tecla('${k}')" aria-label="${k==='⌫'?'Apagar':k}">${k}</button>`).join('')}</div>
+  <div class="lbl">${R?'De onde veio':'Com o que gastou'}</div>
+  <div class="cats">${vis.map(k=>{const c=VC.cat(f.tipo,k);return `<button class="${f.cat===k?'on':''}" onclick="st.f.cat='${k}';r()"><span>${c[1]}</span>${esc(c[2])}</button>`;}).join('')}${!R&&!st.mais?`<button onclick="st.mais=true;r()"><span>⋯</span>Mais</button>`:''}</div>
+  ${R&&f.cat==='outras'?`<div class="aviso warn" style="margin:0 0 4px"><span>ℹ️</span><div>Empréstimo, dinheiro seu colocado no negócio ou devolução: entra no caixa, mas <b>não conta</b> no faturamento do MEI.</div></div>`:''}
+  ${!R&&f.cat==='retirada'?`<div class="aviso pri" style="margin:0 0 4px"><span>👛</span><div>Dinheiro que você tirou para uso pessoal. Não é despesa do negócio, mas ajuda a ver se você está tirando mais do que lucra.</div></div>`:''}
+  <div class="lbl">Descrição (opcional)</div><input id="fDesc" class="campo" maxlength="80" value="${esc(f.desc)}" placeholder="${R?'Ex.: Corte e escova — Maria':'Ex.: Shampoo e tinturas'}">
+  <div class="lbl">Quando</div><div class="chips"><button class="${f.data===hojeISO()?'on':''}" onclick="st.f.data='${hojeISO()}';r()">Hoje</button><button class="${f.data===ontem?'on':''}" onclick="st.f.data='${ontem}';r()">Ontem</button>
+   <label class="chips" style="display:inline-flex"><button class="${f.data!==hojeISO()&&f.data!==ontem?'on':''}" onclick="document.getElementById('fData').showPicker?.();document.getElementById('fData').focus()">${f.data!==hojeISO()&&f.data!==ontem?fmtD(f.data):'Outro dia'} 📅</button></label>
+   <input type="date" id="fData" value="${f.data}" max="${hojeISO()}" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"></div>
+  <div class="lbl">Como ${R?'recebeu':'pagou'}</div><div class="chips">${FORMAS.map(x=>`<button class="${f.forma===x?'on':''}" onclick="st.f.forma='${x}';r()">${x}</button>`).join('')}</div>
+  <button class="sw ${f.nf?'on':''}" onclick="st.f.nf=!st.f.nf;r()" role="switch" aria-checked="${!!f.nf}"><span>${R?'🧾 Emiti nota fiscal':'🧾 Tenho nota ou comprovante'}</span><i></i></button>
+  <button class="btng" style="margin-top:16px" onclick="salvarLanc()">${f.id?'Salvar alteração':R?'Salvar entrada':'Salvar saída'}</button>
+  ${f.id?`<button class="btnx" onclick="excluirLanc()">Excluir lançamento</button>`:''}</div>`;};
+function trocaTipo(t){const p=P();st.f.tipo=t;st.f.cat=t==='R'?VC.entradaPadrao(p):VC.saidasDo(p)[0];st.f.nf=false;st.mais=false;r();}
+function tecla(k){const f=st.f;if(k==='⌫')f.txt=f.txt.slice(0,-1);else if((f.txt+k).length<=9)f.txt=(f.txt+k).replace(/^0+/,'');r();}
+addEventListener('keydown',e=>{if(st.tela!=='novo'||document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  if(/^\d$/.test(e.key))tecla(e.key);else if(e.key==='Backspace')tecla('⌫');else if(e.key==='Enter')salvarLanc();});
+function salvarLanc(){const f=st.f;const d=document.getElementById('fDesc');if(d)f.desc=d.value.trim();const v=+f.txt/100;
+  if(!v){aviso('Digite o valor no teclado.');return;}
+  const x={id:f.id||uid(),data:f.data,tipo:f.tipo,cat:f.cat,valor:Math.round(v*100)/100,desc:f.desc,forma:f.forma,nf:!!f.nf,u:Date.now()};
+  const i=D.lanc.findIndex(y=>y.id===x.id);if(i>=0)D.lanc[i]=x;else D.lanc.push(x);gravar();st.f=null;
+  history.back();setTimeout(()=>aviso(`${x.tipo==='R'?'Entrada':'Saída'} de ${brl(x.valor)} ${i>=0?'alterada':'salva'}.`),60);}
+function excluirLanc(){const f=st.f;if(!confirm('Excluir este lançamento?'))return;D.lanc=D.lanc.filter(y=>y.id!==f.id);D.del.push({id:f.id,u:Date.now()});gravar();st.f=null;history.back();setTimeout(()=>aviso('Lançamento excluído.'),60);}
+T.mes=()=>{const [Y,m]=st.mes,rm=resumoMes(Y,m),t=totais(rm.l);
+  const fim=new Date(Y,m+1,0).getDate(),sem=[[1,7],[8,14],[15,21],[22,28]];if(fim>28)sem.push([29,fim]);
+  const ws=sem.map(([a,b])=>{const xs=rm.l.filter(x=>{const d=+x.data.slice(8,10);return d>=a&&d<=b;});return totais(xs);});const mx=Math.max(1,...ws.map(w=>Math.max(w.e,w.s)));
+  const desp={};rm.l.filter(x=>x.tipo==='D').forEach(x=>{desp[x.cat]=(desp[x.cat]||0)+x.valor;});const dl=Object.entries(desp).sort((a,b)=>b[1]-a[1]);
+  const env=D.envios.filter(e=>e.p===VC.ym(Y,m)).slice(-1)[0];
+  const venc=new Date(Y,m+1,20);
+  return cab('Fechamento do mês')+`<div class="rolar">${seletorMes()}
+  ${rm.l.length?`<div class="trio"><div><small>Entrou</small><b class="ok">${brl(t.e)}</b></div><div><small>Saiu</small><b class="bad">${brl(t.s)}</b></div><div><small>Sobrou</small><b class="${t.l<0?'bad':''}">${brl(t.l)}</b></div></div>
+  <div class="c"><h3>Entradas × saídas por semana</h3><div class="barras">${ws.map((w,i)=>`<div><span class="par"><i style="height:${w.e/mx*100}%;background:#22c581" title="Entradas ${brl(w.e)}"></i><i style="height:${w.s/mx*100}%;background:#f87171" title="Saídas ${brl(w.s)}"></i></span>${sem[i][0]}–${sem[i][1]}</div>`).join('')}</div>
+   <div style="display:flex;gap:14px;font-size:11.5px;color:var(--mut);font-weight:700;margin-top:6px"><span>🟩 entradas</span><span>🟥 saídas</span></div></div>
+  <div class="c"><h3>Relatório Mensal de Receitas Brutas <span class="tg pri">modelo oficial</span></h3><div class="rel" style="margin-top:6px">
+   ${[['Revenda de mercadorias (comércio)',rm.I],['Venda de produtos industrializados',rm.II],['Prestação de serviços e transporte',rm.III]].filter(([,a])=>a[2]).map(([n,a])=>`<div class="g">${n}</div><div><span>Sem nota fiscal</span><b>${brl(a[0])}</b></div><div><span>Com nota fiscal</span><b>${brl(a[1])}</b></div>`).join('')||'<div><span class="mut">Nenhuma receita no mês</span></div>'}
+   <div class="t"><span>Total das receitas brutas</span><span>${brl(rm.rb)}</span></div></div>
+   <div class="dica mut" style="margin-top:8px">Res. CGSN 140/2018, art. 106. Guarde com as notas de compras e vendas até o dia 20 de ${MESES[venc.getMonth()].toLowerCase()}.</div>
+   <button class="btns" style="margin-top:10px;width:100%" onclick="imprimir()">🖨️ Salvar PDF / imprimir o relatório</button></div>
+  <div class="c"><h3>Resultado do mês</h3><div class="rel" style="margin-top:6px"><div><span>Receitas (faturamento)</span><b class="ok">${brl(rm.rb)}</b></div>${rm.outras?`<div><span>Outras entradas (não são faturamento)</span><b>${brl(rm.outras)}</b></div>`:''}
+   <div><span>Despesas do negócio</span><b class="bad">${brl(rm.op)}</b></div><div class="t"><span>Lucro do mês</span><span class="${rm.lucro<0?'bad':''}">${brl(rm.lucro)}</span></div>
+   ${rm.ret?`<div><span>Retiradas para você</span><b>${brl(rm.ret)}</b></div>`:''}${rm.inv?`<div><span>Investimentos</span><b>${brl(rm.inv)}</b></div>`:''}</div></div>
+  ${dl.length?`<div class="c"><h3>Para onde foi o dinheiro</h3>${dl.slice(0,6).map(([k,v])=>`<div style="margin-top:9px"><div class="lin2" style="font-size:13px"><span>${icoCat('D',k)} ${esc(VC.cat('D',k)[2])}</span><b>${brl(v)}</b></div><div class="barra" style="margin-top:4px"><i style="width:${v/dl[0][1]*100}%;background:#f87171"></i></div></div>`).join('')}</div>`:''}
+  <button class="btng" onclick="ir('enviar')">${env?'Enviar de novo ao contador':'Fechar o mês e enviar ao contador'}</button>
+  <p style="text-align:center;font-size:12px;color:var(--mut);margin-top:8px">${env?`Último envio em ${new Date(env.em).toLocaleDateString('pt-BR')} · ${env.n} lançamentos`:'Vai um código com os lançamentos para o contador importar no sistema dele'}</p>`
+  :`<div class="c vazio"><span>📊</span>Nenhum lançamento em ${MESES[m].toLowerCase()} de ${Y}.<br>Os números do mês aparecem aqui conforme você anota.</div>`}
+  </div>${nav('mes')}`;};
+function imprimir(){const [Y,m]=st.mes,rm=resumoMes(Y,m),p=P();
+  const row=(t,a,b)=>`<tr class="g"><td colspan="2">${t}</td></tr><tr><td>${b[0]} — Receita com dispensa de emissão de documento fiscal</td><td class="n">${brl(a[0])}</td></tr><tr><td>${b[1]} — Receita com documento fiscal emitido</td><td class="n">${brl(a[1])}</td></tr><tr><td>${b[2]} — Total</td><td class="n"><b>${brl(a[2])}</b></td></tr>`;
+  document.getElementById('print').innerHTML=`<h2>RELATÓRIO MENSAL DAS RECEITAS BRUTAS</h2><table><tr><td><b>CNPJ:</b> ${esc(fmtCNPJ(p.c||''))}</td><td><b>Período de apuração:</b> ${MESES[m]}/${Y}</td></tr><tr><td colspan="2"><b>Empreendedor individual:</b> ${esc(p.rz||p.n||'')}</td></tr></table>
+  <table>${row('RECEITA BRUTA MENSAL – REVENDA DE MERCADORIAS (COMÉRCIO)',rm.I,['I','II','III'])}${row('RECEITA BRUTA MENSAL – VENDA DE PRODUTOS INDUSTRIALIZADOS (INDÚSTRIA)',rm.II,['IV','V','VI'])}${row('RECEITA BRUTA MENSAL – PRESTAÇÃO DE SERVIÇOS',rm.III,['VII','VIII','IX'])}
+  <tr class="g"><td>X — Total geral das receitas brutas no mês (III + VI + IX)</td><td class="n">${brl(rm.rb)}</td></tr></table>
+  <p style="margin-top:28px">Local e data: ______________________, ____/____/________</p><p style="margin-top:28px">_____________________________________<br>Assinatura do empresário</p>
+  <p style="font-size:10px;margin-top:16px">Anexar: notas fiscais de compras de mercadorias e insumos, das entradas e dos serviços tomados no mês, e as notas fiscais emitidas (Res. CGSN 140/2018, art. 106 e Anexo X). Transporte incluído em "Prestação de serviços". Gerado pelo VIMALI Caixa.</p>`;
+  setTimeout(()=>window.print(),50);}
+
+/* ---------- envio ao contador ---------- */
+function montarPacote(){const [Y,m]=st.mes,p=P(),k=VC.ym(Y,m),ult=D.ultEnvio||0;
+  const L=D.lanc.filter(x=>x.data.slice(0,7)===k||x.u>ult);
+  const X=D.del.filter(x=>x.u>ult).map(x=>x.id);
+  const Dp={};Object.entries(D.das).forEach(([c,d])=>{if(c>=VC.ym(Y-1,0))Dp[c]=d;});
+  const s=saudeAtual();
+  return {obj:{a:'vc',v:1,app:APP_VER,i:p.i||'',cn:dig(p.c),n:p.n,g:new Date().toISOString(),p:k,L:L.map(x=>[x.id,x.data,x.tipo,x.cat,Math.round(x.valor*100),x.desc||'',x.forma,x.nf?1:0]),X,D:Dp,s:s.nota},
+    n:L.length,outros:L.filter(x=>x.data.slice(0,7)!==k).length,X:X.length,das:Object.keys(Dp).length,tot:totais(doMes(Y,m))};}
+T.enviar=()=>{const [Y,m]=st.mes,p=P(),pk=montarPacote();st.pk=pk;const temZap=!!p.w,temMail=!!p.m;
+  return cab(`${MESES[m]} de ${Y}`,'Enviar ao contador',true)+`<div class="rolar sem-nav">
+  <div class="c"><h3>O que vai no envio</h3><div style="font-size:13.5px;line-height:1.9;margin-top:6px">
+   📋 ${pk.n-pk.outros} lançamento(s) de ${MESES[m].toLowerCase()}<br>${pk.outros?`✏️ ${pk.outros} lançamento(s) de outros meses${D.ultEnvio?', novos ou alterados desde o último envio':' (primeiro envio: vai tudo o que já foi anotado)'}<br>`:''}${pk.X?`🗑️ ${pk.X} exclusão(ões)<br>`:''}${pk.das?`🧾 ${pk.das} DAS marcado(s) como pago<br>`:''}🔐 Código de conferência para o Módulo MEI do seu contador</div></div>
+  <div class="lbl">Enviar por</div>
+  <div class="share">
+   <button onclick="enviarPor('zap')"><span style="background:#25d366">💬</span>WhatsApp${temZap?'':'<br><small class="mut">escolher contato</small>'}</button>
+   <button onclick="enviarPor('mail')"><span style="background:#ea4335">✉️</span>E-mail</button>
+   <button onclick="enviarPor('share')" ${navigator.share?'':'disabled'}><span style="background:#2f6bed">↗️</span>Outro app</button>
+   <button onclick="enviarPor('copiar')"><span style="background:#64748b">📋</span>Copiar código</button></div>
+  <div class="c" style="font-size:13px;line-height:1.5;color:var(--mut)">💬 <b style="color:var(--ink)">A mensagem vai assim:</b><br>"Olá! Segue o fechamento de ${MESES[m].toLowerCase()}/${Y} de ${esc(p.n)}: entrou ${brl(pk.tot.e)}, saiu ${brl(pk.tot.s)}." + o código para o sistema (não altere o código).</div>
+  ${!temZap&&!temMail?`<div class="aviso warn"><span>ℹ️</span><div>O contato do seu contador não está configurado. No WhatsApp, escolha o contato dele na lista. Você pode cadastrar em ⚙️ Ajustes.</div></div>`:''}
+  <div class="aviso pri"><span>🔒</span><div>O código leva só os lançamentos, para o seu contador importar sem digitar nada. Ele também serve de cópia de segurança.</div></div></div>`;};
+async function textoEnvio(){const [Y,m]=st.mes,p=P(),pk=st.pk||montarPacote();const cod=await VC.codificar(pk.obj);
+  return {cod,txt:`Olá! Segue o fechamento de ${MESES[m].toLowerCase()}/${Y} de ${p.n}${p.c?' (CNPJ '+fmtCNPJ(p.c)+')':''}:\n• Entrou: ${brl(pk.tot.e)}\n• Saiu: ${brl(pk.tot.s)}\n• Sobrou: ${brl(pk.tot.l)}\n• ${pk.n} lançamento(s)\n\nCódigo para o Módulo MEI (não altere):\n${cod}\n\nEnviado pelo VIMALI Caixa`,pk};}
+async function enviarPor(via){let e;try{e=await textoEnvio();}catch(x){aviso('Não consegui montar o envio: '+x.message);return;}
+  const p=P(),[Y,m]=st.mes;st.envio={via,pk:e.pk,em:Date.now(),txt:e.txt};
+  if(via==='zap'){const u=`https://wa.me/${p.w?(dig(p.w).length<=11?'55':'')+dig(p.w):''}?text=${encodeURIComponent(e.txt)}`;
+    if(u.length>7500){aviso('O envio ficou grande para o WhatsApp direto. Use "Outro app" ou "Copiar código".',4500);return;}location.href=u;}
+  else if(via==='mail'){const u=`mailto:${encodeURIComponent(p.m||'')}?subject=${encodeURIComponent(`Fechamento ${MESES[m]}/${Y} — ${p.n}`)}&body=${encodeURIComponent(e.txt)}`;
+    if(u.length>15000){aviso('O envio ficou grande para o e-mail direto. Use "Outro app" ou "Copiar código".',4500);return;}location.href=u;}
+  else if(via==='share'){try{await navigator.share({title:`Fechamento ${MESES[m]}/${Y}`,text:e.txt});}catch(x){if(x.name==='AbortError')return;aviso('Não foi possível compartilhar. Use "Copiar código".');return;}}
+  else{const ok=await copiar(e.txt);if(!ok){mostrarTexto(e.txt);return;}aviso('Copiado! Cole na conversa com o seu contador.');}
+  setTimeout(()=>ir('confirma'),via==='copiar'?900:400);}
+async function copiar(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){}try{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok;}catch(e){return false;}}
+function mostrarTexto(t){st.voz={texto:t};r();}
+T.confirma=()=>`<div class="boas" style="background:var(--bg);color:var(--ink);align-items:center;justify-content:center;text-align:center">
+  <div style="width:90px;height:90px;border-radius:50%;background:var(--priS);display:grid;place-items:center;font-size:42px">📤</div><h1 style="margin-top:16px">Conseguiu enviar?</h1>
+  <p style="color:var(--mut)">Confirme quando a mensagem tiver chegado ao seu contador. Assim o app sabe o que já foi enviado.</p>
+  <button class="btng" style="margin-top:24px" onclick="confirmarEnvio()">Sim, enviei</button><button class="btns" style="margin-top:10px;width:100%" onclick="history.back()">Não, tentar de novo</button></div>`;
+function confirmarEnvio(){const e=st.envio;if(e){D.envios.push({p:e.pk.obj.p,em:e.em,n:e.pk.n,via:e.via});D.ultEnvio=e.em;D.del=D.del.filter(x=>x.u>e.em);if(D.envios.length>60)D.envios=D.envios.slice(-60);gravar();}
+  st.envio=null;ir('enviado',true);}
+T.enviado=()=>{const p=P();return `<div class="boas" style="background:var(--bg);color:var(--ink);align-items:center;justify-content:center;text-align:center">
+  <div style="width:90px;height:90px;border-radius:50%;background:var(--okS);display:grid;place-items:center;font-size:44px">✅</div><h1 style="margin-top:16px">Enviado!</h1>
+  <p style="color:var(--mut)">${esc(p.e||'Seu contador')} recebe o fechamento e importa direto no sistema. Se ele tiver alguma dúvida, fala com você.</p>
+  <div class="c" style="margin-top:20px;width:100%;text-align:left;font-size:13px">🔒 Este envio também é uma cópia de segurança: se perder o celular, seus lançamentos estão com o contador.</div>
+  <button class="btnp" style="margin-top:8px" onclick="ir('inicio',true)">Voltar ao início</button></div>`;};
+T.saude=()=>{const s=saudeAtual(),p=P();return cab('Saúde do negócio','Índice VIMALI')+`<div class="rolar">
+  <div class="c" style="text-align:center"><div style="display:flex;justify-content:center;margin:6px 0">${anel(s.nota,s.cor,112)}</div><b style="font-size:17px">${s.rot}</b>
+   <div class="dica mut" style="margin-top:4px">${s.nota==null?esc(s.dica):'Calculado com os seus lançamentos dos últimos 90 dias'}</div></div>
+  ${s.itens.map(x=>`<div class="c"><h3>${x.n}<span class="tg ${x.p>=70?'ok':x.p>=40?'warn':'bad'}">${x.p}</span></h3><div style="font-size:13px;margin:4px 0 8px">${esc(x.txt)}</div><div class="barra"><i style="width:${x.p}%;background:${x.p>=70?'#22c581':x.p>=40?'#f59e0b':'#ef4444'}"></i></div>${x.p<70?`<div class="dica" style="margin-top:8px">💡 ${esc(x.dica)}</div>`:''}</div>`).join('')}
+  ${s.nota!=null?`<div class="c" style="background:var(--priS);font-size:13px;line-height:1.5"><b>O que fazer agora:</b> ${esc(s.dica)}${p.e?`<br><span class="mut">Dúvidas? Fale com ${esc(p.e)}.</span>`:''}</div>`:''}
+  </div>${nav('saude')}`;};
+T.ajustes=()=>{const p=P();return cab('Ajustes','',true)+`<div class="rolar sem-nav">
+  <div class="c"><h3>Seu negócio</h3><div class="lbl">Nome</div><input id="aNome" class="campo" value="${esc(p.n)}" ${p.manual?'':'readonly'}>
+   ${p.c?`<div class="lbl">CNPJ</div><input class="campo" value="${esc(fmtCNPJ(p.c))}" readonly>`:''}
+   ${p.manual?'':`<div class="dica mut" style="margin-top:8px">Configurado pelo ${esc(p.e||'seu contador')} em ${p.conv?new Date(p.conv+'T12:00').toLocaleDateString('pt-BR'):'—'}. Para mudar, peça um novo link a ele.</div>`}</div>
+  <div class="c"><h3>Seu contador</h3><div class="lbl">WhatsApp</div><input id="aZap" class="campo" inputmode="tel" value="${esc(p.w||'')}" placeholder="(47) 99999-9999">
+   <div class="lbl">E-mail</div><input id="aMail" class="campo" inputmode="email" value="${esc(p.m||'')}" placeholder="contato@escritorio.com.br">
+   <button class="btnp" style="margin-top:12px;width:100%" onclick="salvarAjustes()">Salvar</button></div>
+  <div class="c"><h3>Cópia de segurança</h3><div class="dica mut" style="margin:6px 0 10px">Os dados ficam só neste aparelho. Guarde uma cópia de vez em quando (no Google Drive, no e-mail…), principalmente antes de trocar de celular.</div>
+   <div style="display:flex;gap:8px"><button class="btns" style="flex:1" onclick="copiaSalvar()">⬇️ Salvar cópia</button><label class="btns" style="flex:1;text-align:center">⬆️ Restaurar<input type="file" accept=".json,application/json" style="display:none" onchange="copiaRestaurar(this.files[0])"></label></div></div>
+  <div class="c"><h3>Sobre</h3><div class="dica mut" style="line-height:1.6">VIMALI Caixa ${APP_VER} · VIMALI Inteligência Contábil<br>${D.lanc.length} lançamento(s) neste aparelho · desde ${new Date(D.inicio+'T12:00').toLocaleDateString('pt-BR')}<br>Funciona sem internet. Nada é enviado sem você tocar em "Enviar".</div>
+   <button class="btnx" onclick="apagarTudo()">Apagar todos os dados deste aparelho</button></div></div>`;};
+function salvarAjustes(){const p=P();if(p.manual){const n=document.getElementById('aNome').value.trim();if(n)p.n=n;}p.w=dig(document.getElementById('aZap').value);p.m=document.getElementById('aMail').value.trim();gravar();aviso('Ajustes salvos.');}
+function copiaSalvar(){const nome=`vimali-caixa-copia-${hojeISO()}.json`,txt=JSON.stringify(Object.assign({app:'vimali-caixa',ver:APP_VER},D));
+  const f=new File([txt],nome,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Cópia do VIMALI Caixa'}).catch(()=>{});return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);aviso('Cópia salva em Downloads.');}
+function copiaRestaurar(f){if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.app!=='vimali-caixa'||!Array.isArray(d.lanc))throw 0;
+  if(!confirm(`Restaurar a cópia de ${d.perfil?d.perfil.n:'—'} com ${d.lanc.length} lançamento(s)? Os dados atuais deste aparelho serão substituídos.`))return;
+  delete d.app;delete d.ver;D=Object.assign({perfil:null,inicio:hojeISO(),lanc:[],del:[],das:{},envios:[],ultEnvio:0},d);gravar();ir('inicio',true);aviso('Cópia restaurada.');}catch(e){aviso('Arquivo inválido: escolha uma cópia salva pelo VIMALI Caixa.');}};rd.readAsText(f);}
+function apagarTudo(){if(!confirm('Apagar todos os lançamentos e configurações deste aparelho? Isso não pode ser desfeito.'))return;if(!confirm('Tem certeza? Faça uma cópia de segurança antes, se quiser guardar.'))return;
+  localStorage.removeItem(KEY);D=carregar();ir('boas',true);}
+
+/* ---------- lançamento falado ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();if(SR)ouvir();else setTimeout(()=>{const i=document.getElementById('vTxt');if(i)i.focus();},100);}
+function ouvir(){try{rec=new SR();rec.lang='pt-BR';rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onresult=e=>{let t='';for(const x of e.results)t+=x[0].transcript;st.voz.txt=t;if(e.results[e.results.length-1].isFinal){entender(t);}else{const f=document.querySelector('.fala');if(f)f.textContent='"'+t+'"';}};
+  rec.onerror=e=>{if(!st.voz)return;st.voz.fase='escrever';st.voz.erro=e.error==='not-allowed'||e.error==='service-not-allowed'?'O microfone não foi liberado. Escreva abaixo ou toque no microfone do teclado.':e.error==='no-speech'?'Não ouvi nada. Tente de novo ou escreva abaixo.':'Não consegui ouvir agora. Escreva abaixo ou use o microfone do teclado.';r();};
+  rec.onend=()=>{if(st.voz&&st.voz.fase==='ouvindo'){if(st.voz.txt)entender(st.voz.txt);else{st.voz.fase='escrever';r();}}};
+  rec.start();}catch(e){st.voz.fase='escrever';r();}}
+function pararVoz(){try{rec&&rec.abort();}catch(e){}rec=null;}
+function entender(t){const res=VC.interpretar(t,P());st.voz={fase:'entendi',txt:t,res};r();}
+function vozHTML(){const v=st.voz;
+  if(v.texto)return `<div class="sobre" onclick="if(event.target===this){st.voz=null;r()}"><div class="folha"><b>Copie o texto abaixo</b><p class="dica mut">Toque e segure no texto, escolha "Selecionar tudo" e depois "Copiar".</p><textarea class="campo" style="height:220px;margin-top:10px;font-size:12px" readonly>${esc(v.texto)}</textarea><button class="btng" style="margin-top:12px" onclick="st.voz=null;ir('confirma')">Já copiei e enviei</button></div></div>`;
+  const ex=['vendi 150 reais no pix','paguei 80 de luz','gastei 45 de gasolina no cartão','recebi 200 de serviço em dinheiro'];
+  return `<div class="sobre" onclick="if(event.target===this){st.voz=null;pararVoz();r()}"><div class="folha" role="dialog" aria-label="Lançar falando">
+  <div style="text-align:center;font-weight:800;color:var(--mut);font-size:12px;letter-spacing:.08em">${v.fase==='ouvindo'?'OUVINDO… FALE O LANÇAMENTO':v.fase==='entendi'?'ENTENDI ASSIM':'ESCREVA COMO VOCÊ FALARIA'}</div>
+  ${v.fase==='ouvindo'?`<div class="onda">${Array.from({length:14},(_,i)=>`<i style="animation-delay:${i*.07}s"></i>`).join('')}</div><div class="fala">${v.txt?'"'+esc(v.txt)+'"':'<span class="mut" style="font-weight:600;font-size:14px">Ex.: "vendi 150 reais de bolo no pix"</span>'}</div>
+   <button class="btns" style="width:100%;margin-top:14px" onclick="pararVoz();st.voz.fase='escrever';r()">Prefiro escrever</button>`:''}
+  ${v.fase==='escrever'?`${v.erro?`<div class="aviso warn" style="margin-top:10px"><span>🎙️</span><div>${esc(v.erro)}</div></div>`:''}<input id="vTxt" class="campo" style="margin-top:12px" placeholder="vendi 150 reais no pix" value="${esc(v.txt)}" onkeydown="if(event.key==='Enter')entender(this.value)" enterkeyhint="done">
+   <div class="chips" style="margin-top:10px">${ex.map(x=>`<button onclick="entender('${x}')">${x}</button>`).join('')}</div>
+   <button class="btng" style="margin-top:14px" onclick="entender(document.getElementById('vTxt').value)">Entender</button>
+   ${SR?`<button class="btns" style="width:100%;margin-top:8px" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">🎙️ Tentar falando</button>`:'<p class="dica mut" style="text-align:center;margin-top:10px">No iPhone, toque no 🎙️ do teclado para ditar.</p>'}`:''}
+  ${v.fase==='entendi'?`<div class="fala" style="margin-top:8px">"${esc(v.txt)}"</div>${v.res.ok?`<div class="entendi">
+   <div><span>Tipo</span><b class="${v.res.tipo==='R'?'ok':'bad'}">${v.res.tipo==='R'?'Entrou':'Saiu'}</b></div><div><span>Valor</span><b>${brl(v.res.valor)}</b></div>
+   <div><span>Categoria</span><b>${icoCat(v.res.tipo,v.res.cat)} ${esc(VC.cat(v.res.tipo,v.res.cat)[2])}</b></div><div><span>Descrição</span><b>${esc(v.res.desc)}</b></div>
+   <div><span>Forma</span><b>${esc(v.res.forma||'Pix')}${v.res.forma?'':' <span class="mut" style="font-weight:600">(padrão)</span>'}</b></div>${v.res.nf!=null?`<div><span>Nota fiscal</span><b>${v.res.nf?'Sim':'Não'}</b></div>`:''}</div>
+   <div style="display:flex;gap:8px;margin-top:12px"><button class="btns" style="flex:1" onclick="corrigirVoz()">Corrigir</button><button class="btng" style="flex:2" onclick="confirmarVoz()">Confirmar</button></div>`
+   :`<div class="aviso warn" style="margin-top:12px"><span>🤔</span><div>Não entendi ${!v.res.valor?'o valor':'se entrou ou saiu'}. Tente algo como <b>"vendi 150 reais no pix"</b> ou <b>"paguei 80 de luz"</b>.</div></div>
+   <div style="display:flex;gap:8px;margin-top:8px"><button class="btns" style="flex:1" onclick="st.voz={fase:'escrever',txt:st.voz.txt};r()">Escrever</button>${SR?`<button class="btng" style="flex:1" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">Falar de novo</button>`:''}</div>`}`:''}
+  </div></div>`;}
+function confirmarVoz(){const x=st.voz.res;D.lanc.push({id:uid(),data:hojeISO(),tipo:x.tipo,cat:x.cat,valor:x.valor,desc:x.desc,forma:x.forma||'Pix',nf:!!x.nf,u:Date.now()});gravar();st.voz=null;aviso(`${x.tipo==='R'?'Entrada':'Saída'} de ${brl(x.valor)} salva.`);}
+function corrigirVoz(){const x=st.voz.res;st.voz=null;novo(x.tipo,{valor:x.valor,cat:x.cat,desc:x.desc,forma:x.forma||'Pix',nf:!!x.nf});}
+
+/* ---------- instalação ---------- */
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();window._instalar=e;if(st.tela==='inicio')r();});
+function instalar(){const e=window._instalar;if(!e)return;e.prompt();e.userChoice.finally(()=>{window._instalar=null;r();});}
+const ehIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const emApp=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+iniciar();
+</script>
+</body>
+</html>
