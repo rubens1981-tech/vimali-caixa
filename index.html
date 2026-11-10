@@ -285,7 +285,7 @@ const VC=(()=>{
   return {ENT,SAI,cats,cat,entradasDo,entradaPadrao,saidasDo,feriado,vencDAS,ym,iso,codificar,decodificar,conviteCod,conviteLer,interpretar,saude,limite,receitaMes,hash,fmt};
 })();
 
-const APP_VER='1.0.2';
+const APP_VER='1.0.3';
 const KEY='vimaliCaixa_v1';
 const LOGO=s=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/></svg>`;
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -561,7 +561,13 @@ function apagarTudo(){if(!confirm('Apagar todos os lançamentos e configuraçõe
 /* iPhone/iPad: o Safari tem webkitSpeechRecognition, mas ele não funciona no app da tela inicial; lá o caminho é o microfone do teclado. */
 const SR_RAW=window.SpeechRecognition||window.webkitSpeechRecognition;
 const SR=(SR_RAW&&!/iphone|ipad|ipod/i.test(navigator.userAgent)&&!(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))?SR_RAW:null;let rec=null;
-function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();if(SR)ouvir();else{const i=document.getElementById('vTxt');if(i)i.focus();}} /* foco no mesmo toque: abre o teclado com o microfone */
+function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();
+  if(!SR){const i=document.getElementById('vTxt');if(i)i.focus();return;} /* foco no mesmo toque: abre o teclado com o microfone */
+  const v=st.voz,md=navigator.mediaDevices;
+  /* Android (app da tela inicial): o reconhecimento de voz nem sempre pede a permissão sozinho; pedimos o microfone de forma explícita antes de ouvir */
+  if(md&&md.getUserMedia){md.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());if(st.voz===v)ouvir();})
+    .catch(e=>{if(st.voz!==v)return;const sem=e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError');st.voz={fase:'escrever',txt:'',erro:ERRO_VOZ[sem?'audio-capture':'not-allowed'],cod:sem?'audio-capture':'not-allowed (permissão)'};r();});}
+  else ouvir();}
 const ERRO_VOZ={'not-allowed':'O microfone está bloqueado para este app. Libere em Configurações do celular › Apps › (Chrome ou VIMALI Caixa) › Permissões › Microfone. Enquanto isso, escreva abaixo ou use o microfone do teclado.',
   'service-not-allowed':'O celular não liberou o reconhecimento de voz para este app. Use o microfone do teclado (no campo abaixo) ou escreva.',
   'network':'O reconhecimento de voz precisa de internet e não conseguiu conectar. Verifique a conexão ou escreva abaixo.',
