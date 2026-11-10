@@ -285,7 +285,7 @@ const VC=(()=>{
   return {ENT,SAI,cats,cat,entradasDo,entradaPadrao,saidasDo,feriado,vencDAS,ym,iso,codificar,decodificar,conviteCod,conviteLer,interpretar,saude,limite,receitaMes,hash,fmt};
 })();
 
-const APP_VER='1.0.3';
+const APP_VER='1.0.4';
 const KEY='vimaliCaixa_v1';
 const LOGO=s=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/></svg>`;
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -566,9 +566,17 @@ function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();
   const v=st.voz,md=navigator.mediaDevices;
   /* Android (app da tela inicial): o reconhecimento de voz nem sempre pede a permissão sozinho; pedimos o microfone de forma explícita antes de ouvir */
   if(md&&md.getUserMedia){md.getUserMedia({audio:true}).then(s=>{s.getTracks().forEach(t=>t.stop());if(st.voz===v)ouvir();})
-    .catch(e=>{if(st.voz!==v)return;const sem=e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError');st.voz={fase:'escrever',txt:'',erro:ERRO_VOZ[sem?'audio-capture':'not-allowed'],cod:sem?'audio-capture':'not-allowed (permissão)'};r();});}
+    .catch(async e=>{if(st.voz!==v)return;const sem=e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError');
+      let est='';try{est=(await navigator.permissions.query({name:'microphone'})).state;}catch(x){} /* denied = bloqueado no Chrome; prompt = ainda não decidiu */
+      if(st.voz!==v)return;const k=sem?'audio-capture':est==='denied'?'bloqueado':est==='prompt'?'recusado':'android';
+      st.voz={fase:'escrever',txt:'',erro:ERRO_VOZ[k],cod:k+(e&&e.name?' · '+e.name:'')};r();});}
   else ouvir();}
-const ERRO_VOZ={'not-allowed':'O microfone está bloqueado para este app. Libere em Configurações do celular › Apps › (Chrome ou VIMALI Caixa) › Permissões › Microfone. Enquanto isso, escreva abaixo ou use o microfone do teclado.',
+const SITE=location.hostname;
+const TIP_TECLADO='<div class="aviso pri" style="margin:12px 0 0"><span>⌨️</span><div><b>Sem liberar o microfone do app, dá para falar assim:</b> toque no campo acima; no teclado do celular, toque no <b>microfone</b> (🎙️) e dite. Depois toque em <b>Entender</b>.</div></div>';
+const ERRO_VOZ={'bloqueado':'O Chrome está bloqueando o microfone para este site. Não é nas configurações do app: abra o Chrome › ⋮ › Configurações › Configurações do site › Microfone, procure "'+SITE+'" e escolha Permitir. Depois volte e toque em "Tentar falando".',
+  'recusado':'O microfone não foi permitido. Toque em "Tentar falando" e, quando o celular perguntar, escolha Permitir (pode ser "Durante o uso do app").',
+  'android':'O Android não liberou o microfone para o Chrome. Abra Configurações do celular › Apps › Chrome › Permissões › Microfone e escolha "Permitir somente com o app em uso". Depois toque em "Tentar falando".',
+  'not-allowed':'O microfone está bloqueado para este app. No Chrome: ⋮ › Configurações › Configurações do site › Microfone › "'+SITE+'" › Permitir. Enquanto isso, escreva abaixo ou use o microfone do teclado.',
   'service-not-allowed':'O celular não liberou o reconhecimento de voz para este app. Use o microfone do teclado (no campo abaixo) ou escreva.',
   'network':'O reconhecimento de voz precisa de internet e não conseguiu conectar. Verifique a conexão ou escreva abaixo.',
   'audio-capture':'Não encontrei o microfone do aparelho. Escreva abaixo ou use o microfone do teclado.',
@@ -597,14 +605,14 @@ function vozHTML(){const v=st.voz;
   ${v.fase==='escrever'?`${v.erro?`<div class="aviso warn" style="margin-top:10px"><span>🎙️</span><div>${esc(v.erro)}${v.cod?`<br><span style="font-size:11px;opacity:.7">código: ${esc(v.cod)}</span>`:''}</div></div>`:''}<input id="vTxt" class="campo" style="margin-top:12px" placeholder="vendi 150 reais no pix" value="${esc(v.txt)}" onkeydown="if(event.key==='Enter')entender(this.value)" enterkeyhint="done">
    <div class="chips" style="margin-top:10px">${ex.map(x=>`<button onclick="entender('${x}')">${x}</button>`).join('')}</div>
    <button class="btng" style="margin-top:14px" onclick="entender(document.getElementById('vTxt').value)">Entender</button>
-   ${SR?`<button class="btns" style="width:100%;margin-top:8px" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">🎙️ Tentar falando</button>`:'<div class="aviso pri" style="margin:12px 0 0"><span>🎙️</span><div><b>Para falar:</b> toque no campo acima e, no teclado do celular, toque no <b>microfone</b> (🎙️) e dite. Depois toque em <b>Entender</b>.</div></div>'}`:''}
+   ${v.erro||!SR?TIP_TECLADO:''}${SR?`<button class="btns" style="width:100%;margin-top:8px" onclick="abrirVoz()">🎙️ Tentar falando</button>`:''}`:''}
   ${v.fase==='entendi'?`<div class="fala" style="margin-top:8px">"${esc(v.txt)}"</div>${v.res.ok?`<div class="entendi">
    <div><span>Tipo</span><b class="${v.res.tipo==='R'?'ok':'bad'}">${v.res.tipo==='R'?'Entrou':'Saiu'}</b></div><div><span>Valor</span><b>${brl(v.res.valor)}</b></div>
    <div><span>Categoria</span><b>${icoCat(v.res.tipo,v.res.cat)} ${esc(VC.cat(v.res.tipo,v.res.cat)[2])}</b></div><div><span>Descrição</span><b>${esc(v.res.desc)}</b></div>
    <div><span>Forma</span><b>${esc(v.res.forma||'Pix')}${v.res.forma?'':' <span class="mut" style="font-weight:600">(padrão)</span>'}</b></div>${v.res.nf!=null?`<div><span>Nota fiscal</span><b>${v.res.nf?'Sim':'Não'}</b></div>`:''}</div>
    <div style="display:flex;gap:8px;margin-top:12px"><button class="btns" style="flex:1" onclick="corrigirVoz()">Corrigir</button><button class="btng" style="flex:2" onclick="confirmarVoz()">Confirmar</button></div>`
    :`<div class="aviso warn" style="margin-top:12px"><span>🤔</span><div>Não entendi ${!v.res.valor?'o valor':'se entrou ou saiu'}. Tente algo como <b>"vendi 150 reais no pix"</b> ou <b>"paguei 80 de luz"</b>.</div></div>
-   <div style="display:flex;gap:8px;margin-top:8px"><button class="btns" style="flex:1" onclick="st.voz={fase:'escrever',txt:st.voz.txt};r()">Escrever</button>${SR?`<button class="btng" style="flex:1" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">Falar de novo</button>`:''}</div>`}`:''}
+   <div style="display:flex;gap:8px;margin-top:8px"><button class="btns" style="flex:1" onclick="st.voz={fase:'escrever',txt:st.voz.txt};r()">Escrever</button>${SR?`<button class="btng" style="flex:1" onclick="abrirVoz()">Falar de novo</button>`:''}</div>`}`:''}
   </div></div>`;}
 function confirmarVoz(){const x=st.voz.res;D.lanc.push({id:uid(),data:hojeISO(),tipo:x.tipo,cat:x.cat,valor:x.valor,desc:x.desc,forma:x.forma||'Pix',nf:!!x.nf,u:Date.now()});gravar();st.voz=null;aviso(`${x.tipo==='R'?'Entrada':'Saída'} de ${brl(x.valor)} salva.`);}
 function corrigirVoz(){const x=st.voz.res;st.voz=null;novo(x.tipo,{valor:x.valor,cat:x.cat,desc:x.desc,forma:x.forma||'Pix',nf:!!x.nf});}
