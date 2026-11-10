@@ -173,7 +173,7 @@ const VC=(()=>{
   const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
 
   /* ---------- código de envio: JSON → deflate → base64url, com conferência ---------- */
-  const b64e=u8=>{let s='';for(let i=0;i<u8.length;i+=8192)s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+  const b64e=u8=>{let s='';for(let i=0;i<u8.length;i+=8192)s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192));return btoa(s).replace(/\+/g,'-').replace(/[/]/g,'_').replace(/=+$/,'');};
   const b64d=t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const s=atob(t);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;};
   const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);};
   async function fluxo(u8,T){const s=new Blob([u8]).stream().pipeThrough(new T('deflate-raw'));return new Uint8Array(await new Response(s).arrayBuffer());}
@@ -285,7 +285,7 @@ const VC=(()=>{
   return {ENT,SAI,cats,cat,entradasDo,entradaPadrao,saidasDo,feriado,vencDAS,ym,iso,codificar,decodificar,conviteCod,conviteLer,interpretar,saude,limite,receitaMes,hash,fmt};
 })();
 
-const APP_VER='1.0.1';
+const APP_VER='1.0.2';
 const KEY='vimaliCaixa_v1';
 const LOGO=s=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="12" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="7" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/></svg>`;
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -558,13 +558,27 @@ function apagarTudo(){if(!confirm('Apagar todos os lançamentos e configuraçõe
   localStorage.removeItem(KEY);D=carregar();ir('boas',true);}
 
 /* ---------- lançamento falado ---------- */
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
-function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();if(SR)ouvir();else setTimeout(()=>{const i=document.getElementById('vTxt');if(i)i.focus();},100);}
-function ouvir(){try{rec=new SR();rec.lang='pt-BR';rec.interimResults=true;rec.maxAlternatives=1;
-  rec.onresult=e=>{let t='';for(const x of e.results)t+=x[0].transcript;st.voz.txt=t;if(e.results[e.results.length-1].isFinal){entender(t);}else{const f=document.querySelector('.fala');if(f)f.textContent='"'+t+'"';}};
-  rec.onerror=e=>{if(!st.voz)return;st.voz.fase='escrever';st.voz.erro=e.error==='not-allowed'||e.error==='service-not-allowed'?'O microfone não foi liberado. Escreva abaixo ou toque no microfone do teclado.':e.error==='no-speech'?'Não ouvi nada. Tente de novo ou escreva abaixo.':'Não consegui ouvir agora. Escreva abaixo ou use o microfone do teclado.';r();};
-  rec.onend=()=>{if(st.voz&&st.voz.fase==='ouvindo'){if(st.voz.txt)entender(st.voz.txt);else{st.voz.fase='escrever';r();}}};
-  rec.start();}catch(e){st.voz.fase='escrever';r();}}
+/* iPhone/iPad: o Safari tem webkitSpeechRecognition, mas ele não funciona no app da tela inicial; lá o caminho é o microfone do teclado. */
+const SR_RAW=window.SpeechRecognition||window.webkitSpeechRecognition;
+const SR=(SR_RAW&&!/iphone|ipad|ipod/i.test(navigator.userAgent)&&!(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))?SR_RAW:null;let rec=null;
+function abrirVoz(){st.voz={fase:SR?'ouvindo':'escrever',txt:'',res:null};r();if(SR)ouvir();else{const i=document.getElementById('vTxt');if(i)i.focus();}} /* foco no mesmo toque: abre o teclado com o microfone */
+const ERRO_VOZ={'not-allowed':'O microfone está bloqueado para este app. Libere em Configurações do celular › Apps › (Chrome ou VIMALI Caixa) › Permissões › Microfone. Enquanto isso, escreva abaixo ou use o microfone do teclado.',
+  'service-not-allowed':'O celular não liberou o reconhecimento de voz para este app. Use o microfone do teclado (no campo abaixo) ou escreva.',
+  'network':'O reconhecimento de voz precisa de internet e não conseguiu conectar. Verifique a conexão ou escreva abaixo.',
+  'audio-capture':'Não encontrei o microfone do aparelho. Escreva abaixo ou use o microfone do teclado.',
+  'no-speech':'Não ouvi nada. Fale perto do microfone ou escreva abaixo.',
+  'language-not-supported':'O reconhecimento de voz em português não está disponível neste aparelho. Use o microfone do teclado.',
+  'timeout':'O reconhecimento de voz não respondeu. Use o microfone do teclado (no campo abaixo) ou escreva.',
+  'sem-audio':'Não ouvi nada. Fale perto do microfone ou escreva abaixo.'};
+function ouvir(){const v=st.voz;let ini=false,fim=false;
+  const falhar=cod=>{if(fim||!st.voz||st.voz!==v)return;fim=true;pararVoz();st.voz={fase:'escrever',txt:v.txt||'',erro:ERRO_VOZ[cod]||'Não consegui ouvir agora. Escreva abaixo ou use o microfone do teclado.',cod};r();};
+  try{rec=new SR();rec.lang='pt-BR';rec.interimResults=true;rec.maxAlternatives=1;
+    rec.onstart=()=>{ini=true;};
+    rec.onresult=e=>{if(st.voz!==v||fim)return;let t='';for(const x of e.results)t+=x[0].transcript;v.txt=t;ini=true;if(e.results[e.results.length-1].isFinal){fim=true;entender(t);}else{const f=document.querySelector('.fala');if(f)f.textContent='"'+t+'"';}};
+    rec.onerror=e=>{if(e.error==='aborted')return;falhar(e.error);};
+    rec.onend=()=>{if(st.voz!==v||fim)return;if(v.txt){fim=true;entender(v.txt);}else falhar('sem-audio');};
+    setTimeout(()=>{if(!ini)falhar('timeout');},6000); /* se nada começar em 6 s (ex.: tela de permissão ignorada), cai no teclado */
+    rec.start();}catch(e){falhar('timeout');}}
 function pararVoz(){try{rec&&rec.abort();}catch(e){}rec=null;}
 function entender(t){const res=VC.interpretar(t,P());st.voz={fase:'entendi',txt:t,res};r();}
 function vozHTML(){const v=st.voz;
@@ -574,10 +588,10 @@ function vozHTML(){const v=st.voz;
   <div style="text-align:center;font-weight:800;color:var(--mut);font-size:12px;letter-spacing:.08em">${v.fase==='ouvindo'?'OUVINDO… FALE O LANÇAMENTO':v.fase==='entendi'?'ENTENDI ASSIM':'ESCREVA COMO VOCÊ FALARIA'}</div>
   ${v.fase==='ouvindo'?`<div class="onda">${Array.from({length:14},(_,i)=>`<i style="animation-delay:${i*.07}s"></i>`).join('')}</div><div class="fala">${v.txt?'"'+esc(v.txt)+'"':'<span class="mut" style="font-weight:600;font-size:14px">Ex.: "vendi 150 reais de bolo no pix"</span>'}</div>
    <button class="btns" style="width:100%;margin-top:14px" onclick="pararVoz();st.voz.fase='escrever';r()">Prefiro escrever</button>`:''}
-  ${v.fase==='escrever'?`${v.erro?`<div class="aviso warn" style="margin-top:10px"><span>🎙️</span><div>${esc(v.erro)}</div></div>`:''}<input id="vTxt" class="campo" style="margin-top:12px" placeholder="vendi 150 reais no pix" value="${esc(v.txt)}" onkeydown="if(event.key==='Enter')entender(this.value)" enterkeyhint="done">
+  ${v.fase==='escrever'?`${v.erro?`<div class="aviso warn" style="margin-top:10px"><span>🎙️</span><div>${esc(v.erro)}${v.cod?`<br><span style="font-size:11px;opacity:.7">código: ${esc(v.cod)}</span>`:''}</div></div>`:''}<input id="vTxt" class="campo" style="margin-top:12px" placeholder="vendi 150 reais no pix" value="${esc(v.txt)}" onkeydown="if(event.key==='Enter')entender(this.value)" enterkeyhint="done">
    <div class="chips" style="margin-top:10px">${ex.map(x=>`<button onclick="entender('${x}')">${x}</button>`).join('')}</div>
    <button class="btng" style="margin-top:14px" onclick="entender(document.getElementById('vTxt').value)">Entender</button>
-   ${SR?`<button class="btns" style="width:100%;margin-top:8px" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">🎙️ Tentar falando</button>`:'<p class="dica mut" style="text-align:center;margin-top:10px">No iPhone, toque no 🎙️ do teclado para ditar.</p>'}`:''}
+   ${SR?`<button class="btns" style="width:100%;margin-top:8px" onclick="st.voz={fase:'ouvindo',txt:''};r();ouvir()">🎙️ Tentar falando</button>`:'<div class="aviso pri" style="margin:12px 0 0"><span>🎙️</span><div><b>Para falar:</b> toque no campo acima e, no teclado do celular, toque no <b>microfone</b> (🎙️) e dite. Depois toque em <b>Entender</b>.</div></div>'}`:''}
   ${v.fase==='entendi'?`<div class="fala" style="margin-top:8px">"${esc(v.txt)}"</div>${v.res.ok?`<div class="entendi">
    <div><span>Tipo</span><b class="${v.res.tipo==='R'?'ok':'bad'}">${v.res.tipo==='R'?'Entrou':'Saiu'}</b></div><div><span>Valor</span><b>${brl(v.res.valor)}</b></div>
    <div><span>Categoria</span><b>${icoCat(v.res.tipo,v.res.cat)} ${esc(VC.cat(v.res.tipo,v.res.cat)[2])}</b></div><div><span>Descrição</span><b>${esc(v.res.desc)}</b></div>
